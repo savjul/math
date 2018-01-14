@@ -21,22 +21,22 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Expression add(Expression other) {
-        if (this.equals(other)) {
-            return Term.of(IntegerConstant.of(2), this);
+    public Expression add(Expression o) {
+        if (this.equals(o)) {
+            return IntegerConstant.TWO.multiply(o);
         }
         else {
-            return Polynomial.of(this, other);
+            return Polynomial.of(this, o);
         }
     }
 
     @Override
-    public Expression multiply(Expression other) {
-        if (this.equals(other)) {
+    public Expression multiply(Expression o) {
+        if (this.equals(o)) {
             return Exponent.of(this, IntegerConstant.of(2));
         }
         else {
-            return Term.of(this, other);
+            return super.multiply(o);
         }
     }
 

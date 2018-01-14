@@ -1,8 +1,8 @@
 package com.savjul.math.expression;
 
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Term extends Expression {
     private final List<Expression> factors;
@@ -35,7 +35,13 @@ public final class Term extends Expression {
         if (o instanceof Term) {
             Term other = (Term) o;
             if (other.getNonConstantExpression().equals(this.getNonConstantExpression())) {
-                return Term.of(this.getConstantExpression().add(other.getConstantExpression()), this.getNonConstantExpression());
+                Optional<Expression> nonConstant = this.getNonConstantExpression();
+                Expression result = Term.of(this.getConstantExpression().orElse(IntegerConstant.ONE)
+                        .add(other.getConstantExpression().orElse(IntegerConstant.ONE)));
+                if (nonConstant.isPresent()) {
+                    result = result.multiply(nonConstant.get());
+                }
+                return result;
             }
         }
         return Polynomial.of(this, o);
@@ -51,12 +57,12 @@ public final class Term extends Expression {
             return new Term(null, all);
         }
         else {
-            return Term.of(this, o);
+            return super.multiply(o);
         }
     }
 
     @Override
-    public Term simplify() {
+    public Expression simplify() {
         Deque<Expression> factors = new ArrayDeque<>(this.factors);
         List<Expression> result = new ArrayList<>(this.factors.size());
         while (! factors.isEmpty()) {
@@ -64,7 +70,13 @@ public final class Term extends Expression {
             while (! factors.isEmpty() && current.getClass().isInstance(factors.peekFirst())) {
                 current = current.multiply(factors.pollFirst());
             }
-            // to prevent infinite recursion, you must prevent infinite recursion
+            while (! factors.isEmpty() && factors.peekFirst() instanceof Polynomial) {
+                result.add(current);
+                Term factor = new Term(null, result);
+                Polynomial polynomial = (Polynomial) factors.pollFirst();
+                current = Polynomial.multiply(factor, polynomial);
+                result = new ArrayList<>();
+            }
             if (! current.equals(this)) {
                 current = current.simplify();
             }
@@ -73,41 +85,82 @@ public final class Term extends Expression {
             }
         }
         if (result.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f).anyMatch(f->f.getValue() == 0)) {
-            result = Collections.singletonList(IntegerConstant.of(0));
+            result = Collections.singletonList(IntegerConstant.ZERO);
         }
-        if (result.size() == 0) {
-            result = Collections.singletonList(IntegerConstant.of(1));
-        }
-        return new Term(null, result);
+        return result.size() == 0 ? IntegerConstant.ONE : result.size() == 1 ? result.get(0) :
+                new Term(null, result);
     }
 
     public List<Expression> getFactors() {
         return this.factors;
     }
 
-    public IntegerConstant getConstantExpression() {
-        return this.factors.stream().filter(e->e instanceof IntegerConstant)
-                .map(e->((IntegerConstant) e))
-                .findFirst().orElse(IntegerConstant.of(1));
+    public static Optional<IntegerConstant> getCoefficient(Expression expression) {
+        if (expression instanceof Term) {
+            return ((Term) expression).getConstantExpression();
+        }
+        else if (expression instanceof IntegerConstant) {
+            return Optional.of((IntegerConstant)expression);
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
-    public Term getNonConstantExpression() {
-        return this.getFilteredTerm(e->! (e instanceof IntegerConstant));
+    public static Optional<Expression> getNonCoefficient(Expression expression) {
+        if (expression instanceof Term) {
+            return ((Term) expression).getNonConstantExpression();
+        }
+        else if (expression instanceof IntegerConstant) {
+            return Optional.empty();
+        }
+        else {
+            return Optional.of(expression);
+        }
     }
 
-    private Term getFilteredTerm(Predicate<Expression> f) {
-        return new Term(null, this.factors.stream().filter(f).collect(Collectors.toList()));
+    private Optional<IntegerConstant> getConstantExpression() {
+        return this.factors.stream().filter(e->e instanceof IntegerConstant).map(e->(IntegerConstant)e)
+                .findFirst();
+    }
+
+    private Optional<Expression> getNonConstantExpression() {
+        List<Expression> nonConstants = getNonConstants().collect(Collectors.toList());
+        return nonConstants.size() == 0 ? Optional.empty() :
+                Optional.of(nonConstants.size() == 1 ? nonConstants.get(0) : new Term(null, nonConstants));
+    }
+
+    private Stream<Expression> getNonConstants() {
+        return this.factors.stream().filter(e->!(e instanceof IntegerConstant));
     }
 
     private boolean isOne(Expression e) {
-        return e instanceof IntegerConstant && ((IntegerConstant) e).getValue() == 1;
+        return IntegerConstant.ONE.equals(e);
     }
 
     @Override
     public int order() {
-        return this.getNonConstantExpression().factors.stream().map(Expression::order)
+        return this.getNonConstants().map(Expression::order)
                 .max(Comparator.naturalOrder()).orElse(ExpressionConstants.INTEGER_ORDER_OTHER);
     }
+
+    @Override
+    public int compareTo(Expression o) {
+        if (o instanceof Term) {
+            int result = compare(this.getNonConstants().collect(Collectors.toList()),
+                    ((Term) o).getNonConstants().collect(Collectors.toList()));
+            if (result == 0) {
+                Optional<IntegerConstant> thisCo = this.getConstantExpression();
+                Optional<IntegerConstant> otherCo = ((Term) o).getConstantExpression();
+                return ! thisCo.isPresent() ? 1 : ! otherCo.isPresent() ? -1 : thisCo.get().compareTo(otherCo.get());
+            }
+            else {
+                return result;
+            }
+        }
+        return super.compareTo(o);
+    }
+
 
     @Override
     public String render() {

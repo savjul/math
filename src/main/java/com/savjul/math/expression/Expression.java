@@ -20,12 +20,27 @@ public abstract class Expression implements Comparable<Expression> {
         return Integer.MAX_VALUE;
     }
 
-    public Expression add(Expression other) {
-        return Polynomial.of(this, other);
+    public Expression add(Expression o) {
+        if (this.equals(IntegerConstant.ZERO)) {
+            return o;
+        }
+        else if (o.equals(IntegerConstant.ZERO)) {
+            return this;
+        }
+        return Polynomial.of(this, o);
     }
 
-    public Expression multiply(Expression other) {
-        return Term.of(this, other);
+    public Expression multiply(Expression o) {
+        if (this.equals(IntegerConstant.ZERO) || o.equals(IntegerConstant.ZERO)) {
+            return IntegerConstant.ZERO;
+        }
+        else if (this.equals(IntegerConstant.ONE)) {
+            return o;
+        }
+        else if (o.equals(IntegerConstant.ONE)) {
+            return this;
+        }
+        return Term.of(this, o);
     }
 
     public Expression exp(Expression other) {

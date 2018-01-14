@@ -12,7 +12,7 @@ public class VectorTest {
     public void testVectorAddition() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Vector v2 = Vector.of(Variable.of("x")
-                .add(IntegerConstant.of(1)), Variable.of("y"), Term.of(IntegerConstant.of(-1), Variable.of("z")));
+                .add(IntegerConstant.ONE), Variable.of("y"), IntegerConstant.MINUS_ONE.multiply(Variable.of("z")));
         Vector res = v1.add(v2).simplify();
         Assert.assertEquals("[2x + 1, 2y, 0]", res.toString());
     }
@@ -48,9 +48,9 @@ public class VectorTest {
 
     @Test
     public void testCrossProduct() {
-        Vector v1 = Vector.of(Variable.of("x"), IntegerConstant.of(0), IntegerConstant.of(0));
-        Vector v2 = Vector.of(IntegerConstant.of(0), Variable.of("y"), IntegerConstant.of(0));
-        Vector res = v1.cross(v2);
+        Vector v1 = Vector.of(Variable.of("x"), IntegerConstant.ZERO, IntegerConstant.ZERO);
+        Vector v2 = Vector.of(IntegerConstant.ZERO, Variable.of("y"), IntegerConstant.ZERO);
+        Vector res = v1.cross(v2).simplify();
         Assert.assertEquals("[0, 0, xy]", res.simplify().toString());
     }
 
@@ -67,15 +67,27 @@ public class VectorTest {
 
     @Test
     public void testAntiCommutativity() {
-        IntegerConstant minus1 = IntegerConstant.of(-1);
-
         Vector jxi = Vector.j.cross(Vector.i);
         Vector kxj = Vector.k.cross(Vector.j);
         Vector ixk = Vector.i.cross(Vector.k);
 
-        Assert.assertEquals(Vector.k.multiply(minus1), jxi);
-        Assert.assertEquals(Vector.i.multiply(minus1), kxj);
-        Assert.assertEquals(Vector.j.multiply(minus1), ixk);
+        Assert.assertEquals(Vector.k.multiply(IntegerConstant.MINUS_ONE), jxi);
+        Assert.assertEquals(Vector.i.multiply(IntegerConstant.MINUS_ONE), kxj);
+        Assert.assertEquals(Vector.j.multiply(IntegerConstant.MINUS_ONE), ixk);
+    }
+
+    @Test
+    public void testCyclicalIdentity() {
+        // (A x B ) x C = (A dot C)B - (B dot C)A
+        Vector a = Vector.of(Variable.of("a1"), Variable.of("a2"), Variable.of("a3"));
+        Vector b = Vector.of(Variable.of("b1"), Variable.of("b2"), Variable.of("b3"));
+        Vector c = Vector.of(Variable.of("c1"), Variable.of("c2"), Variable.of("c3"));
+        Vector lhs = a.cross(b).cross(c);
+        lhs = lhs.simplify();
+        Vector rhs = b.multiply(a.dot(c)).add(a.multiply(b.dot(c)).multiply(IntegerConstant.MINUS_ONE));
+        rhs = rhs.simplify();
+        rhs = rhs.simplify();
+        Assert.assertEquals(lhs, rhs);
     }
 
 }

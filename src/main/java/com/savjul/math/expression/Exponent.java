@@ -32,12 +32,12 @@ public final class Exponent extends Expression {
     }
 
     @Override
-    public Expression add(Expression other) {
-        if (this.equals(other)) {
-            return Term.of(IntegerConstant.of(2), this);
+    public Expression add(Expression o) {
+        if (this.equals(o)) {
+            return IntegerConstant.TWO.multiply(this);
         }
         else {
-            return Polynomial.of(this, other);
+            return super.add(o);
         }
     }
 
@@ -46,10 +46,10 @@ public final class Exponent extends Expression {
         if (other instanceof Exponent) {
             Exponent o = (Exponent) other;
             if (this.base.equals(o.base)) {
-                return Exponent.of(this.base, Polynomial.of(this.exponent, o.exponent));
+                return Exponent.of(this.base, this.exponent.add(o.exponent));
             }
         }
-        return Term.of(this, other);
+        return super.multiply(other);
     }
 
     @Override

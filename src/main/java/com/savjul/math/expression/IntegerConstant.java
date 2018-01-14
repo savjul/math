@@ -3,6 +3,10 @@ package com.savjul.math.expression;
 import java.util.Objects;
 
 public final class IntegerConstant extends Expression {
+    public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
+    public static final IntegerConstant ZERO = IntegerConstant.of(0);
+    public static final IntegerConstant ONE = IntegerConstant.of(1);
+    public static final IntegerConstant TWO = IntegerConstant.of(2);
     private final Integer value;
 
     private IntegerConstant(Expression parent, Integer value) {
@@ -34,18 +38,17 @@ public final class IntegerConstant extends Expression {
             return this.add((IntegerConstant) o);
         }
         else {
-            return Polynomial.of(this, o);
+            return super.add(o);
         }
     }
 
     @Override
-    public Expression multiply(Expression other) {
-        if (other instanceof IntegerConstant && this.value.getClass().isInstance(((IntegerConstant) other).value)) {
-            IntegerConstant o = (IntegerConstant) other;
-            return new IntegerConstant(null, this.value * o.value);
+    public Expression multiply(Expression o) {
+        if (o instanceof IntegerConstant) {
+            return new IntegerConstant(null, this.value * ((IntegerConstant)o).value);
         }
         else {
-            return Term.of(this, other);
+            return super.multiply(o);
         }
     }
 
@@ -71,7 +74,8 @@ public final class IntegerConstant extends Expression {
 
     @Override
     public int order() {
-        return ExpressionConstants.INTEGER_ORDER_TERM;
+        return this.getParent() instanceof Term ? ExpressionConstants.INTEGER_ORDER_TERM
+                : ExpressionConstants.INTEGER_ORDER_OTHER;
     }
 
     @Override
