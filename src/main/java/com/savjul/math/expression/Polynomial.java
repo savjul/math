@@ -97,9 +97,13 @@ public final class Polynomial extends Expression {
                 IntegerConstant c = current.getConstantExpression().add(other.getConstantExpression());
                 current = Term.of(c, current.getNonConstantExpression()).simplify();
             }
-            result.add(current);
+            if (current.getConstantExpression().getValue() != 0) {
+                result.add(current.simplify());
+            }
         }
-        return result.size() == 1 ? result.get(0) : new Polynomial(null, result);
+        return result.size() == 0 ? IntegerConstant.of(0) :
+                result.size() == 1 ? result.get(0) :
+                new Polynomial(null, result);
     }
 
     @Override

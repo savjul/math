@@ -3,9 +3,17 @@ package com.savjul.math.expression;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ConcurrentModificationException;
-
 public class ExpressionTest {
+    @Test
+    public void testExpressionOrder() {
+        Expression e1 = Variable.of("x").add(IntegerConstant.of(1));
+        Assert.assertEquals(ExpressionConstants.POLYNOMIAL_ORDER, e1.order());
+        Expression e2 = Variable.of("x").multiply(Variable.of("x")).multiply(IntegerConstant.of(1));
+        Assert.assertEquals(ExpressionConstants.TERM_ORDER, e2.order());
+        Expression e3 = Term.of(IntegerConstant.of(1));
+        Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_OTHER, e3.order());
+    }
+
     @Test
     public void testPolynomialWithExponent() {
         Expression e = Variable.of("x").exp(IntegerConstant.of(2)).add(Variable.of("x"));
@@ -31,7 +39,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").add(IntegerConstant.of(1));
         Expression e2 = Variable.of("y").add(IntegerConstant.of(3));
         Expression res = e1.multiply(e2);
-        Assert.assertEquals("(x + 1)(y + 3)", res.toString());
+        Assert.assertEquals("(x + 1)(y + 3)", res.simplify().toString());
     }
 
     @Test
@@ -53,7 +61,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").add(IntegerConstant.of(1));
         Expression e2 = Variable.of("x").add(IntegerConstant.of(3));
         Expression res = Polynomial.multiply((Polynomial) e1, (Polynomial) e2);
-        Assert.assertEquals("x^2 + 3x + 1x + 3", res.toString());
+        Assert.assertEquals("x^2 + 3x + x + 3", res.toString());
         Assert.assertEquals("x^2 + 4x + 3", res.simplify().toString());
     }
 
@@ -62,7 +70,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").add(IntegerConstant.of(1));
         Expression e2 = Variable.of("x").add(IntegerConstant.of(-1));
         Expression res = Polynomial.multiply((Polynomial) e1, (Polynomial) e2);
-        Assert.assertEquals("x^2 + -1x + 1x + -1", res.toString());
+        Assert.assertEquals("x^2 + -1x + x + -1", res.toString());
         Assert.assertEquals("x^2 + -1", res.simplify().toString());
     }
 

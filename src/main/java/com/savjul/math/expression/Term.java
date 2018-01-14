@@ -64,10 +64,19 @@ public final class Term extends Expression {
             while (! factors.isEmpty() && current.getClass().isInstance(factors.peekFirst())) {
                 current = current.multiply(factors.pollFirst());
             }
-            result.add(current.simplify());
+            // to prevent infinite recursion, you must prevent infinite recursion
+            if (! current.equals(this)) {
+                current = current.simplify();
+            }
+            if (! isOne(current)) {
+                result.add(current);
+            }
         }
         if (result.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f).anyMatch(f->f.getValue() == 0)) {
             result = Collections.singletonList(IntegerConstant.of(0));
+        }
+        if (result.size() == 0) {
+            result = Collections.singletonList(IntegerConstant.of(1));
         }
         return new Term(null, result);
     }
@@ -83,11 +92,15 @@ public final class Term extends Expression {
     }
 
     public Term getNonConstantExpression() {
-        return this.getFilteredTerm(e->! (e instanceof IntegerConstant)).simplify();
+        return this.getFilteredTerm(e->! (e instanceof IntegerConstant));
     }
 
     private Term getFilteredTerm(Predicate<Expression> f) {
         return new Term(null, this.factors.stream().filter(f).collect(Collectors.toList()));
+    }
+
+    private boolean isOne(Expression e) {
+        return e instanceof IntegerConstant && ((IntegerConstant) e).getValue() == 1;
     }
 
     @Override

@@ -34,7 +34,7 @@ public final class IntegerConstant extends Expression {
             return this.add((IntegerConstant) o);
         }
         else {
-            return Polynomial.of(null, this, o);
+            return Polynomial.of(this, o);
         }
     }
 
