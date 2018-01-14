@@ -20,18 +20,21 @@ public final class IntegerConstant extends Expression {
     }
 
     @Override
-    public IntegerConstant of(Expression parent) {
+    public IntegerConstant withParent(Expression parent) {
         return new IntegerConstant(parent, this.value);
     }
 
+    public IntegerConstant add(IntegerConstant o) {
+        return new IntegerConstant(null,this.value + o.value);
+    }
+
     @Override
-    public Expression add(Expression other) {
-        if (other instanceof IntegerConstant && this.value.getClass().isInstance(((IntegerConstant) other).value)) {
-            IntegerConstant o = (IntegerConstant) other;
-            return new IntegerConstant(null,this.value + o.value);
+    public Expression add(Expression o) {
+        if (o instanceof IntegerConstant) {
+            return this.add((IntegerConstant) o);
         }
         else {
-            return Polynomial.of(null, this, other);
+            return Polynomial.of(null, this, o);
         }
     }
 
@@ -68,7 +71,7 @@ public final class IntegerConstant extends Expression {
 
     @Override
     public int order() {
-        return this.getParent() instanceof Polynomial ? ExpressionConstants.INTEGER_ORDER_OTHER : ExpressionConstants.INTEGER_ORDER_TERM;
+        return ExpressionConstants.INTEGER_ORDER_TERM;
     }
 
     @Override

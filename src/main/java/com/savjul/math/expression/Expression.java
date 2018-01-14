@@ -11,7 +11,7 @@ public abstract class Expression implements Comparable<Expression> {
         this.parent = parent;
     }
 
-    public abstract Expression of(Expression parent);
+    public abstract Expression withParent(Expression parent);
 
 
     public abstract String render();
@@ -50,7 +50,7 @@ public abstract class Expression implements Comparable<Expression> {
         return Integer.compare(this.order(), o.order());
     }
 
-    protected static int compare(List<Expression> l1, List<Expression> l2) {
+    protected static int compare(List<? extends Expression> l1, List<? extends Expression> l2) {
         Deque<Expression> q1 = new ArrayDeque<>(l1);
         Deque<Expression> q2 = new ArrayDeque<>(l2);
         while (! (q1.isEmpty() || q2.isEmpty())) {

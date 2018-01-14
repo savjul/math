@@ -10,8 +10,8 @@ public final class Exponent extends Expression {
         super(parent);
         Objects.requireNonNull(base);
         Objects.requireNonNull(exponent);
-        this.base = base.of(this);
-        this.exponent = exponent.of(this);
+        this.base = base.withParent(this);
+        this.exponent = exponent.withParent(this);
     }
 
     public static Exponent of(Expression base, Expression exponent) {
@@ -27,7 +27,7 @@ public final class Exponent extends Expression {
     }
 
     @Override
-    public Exponent of(Expression parent) {
+    public Exponent withParent(Expression parent) {
         return new Exponent(parent, this.base, this.exponent);
     }
 

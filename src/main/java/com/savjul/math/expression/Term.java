@@ -12,10 +12,10 @@ public final class Term extends Expression {
         this.factors = new ArrayList<>();
         for (Expression factor: factors) {
             if (factor instanceof Term) {
-                this.factors.addAll(((Term) factor).getFactors().stream().map(f->f.of(this)).collect(Collectors.toList()));
+                this.factors.addAll(((Term) factor).getFactors().stream().map(f->f.withParent(this)).collect(Collectors.toList()));
             }
             else {
-                this.factors.add(factor.of(this));
+                this.factors.add(factor.withParent(this));
             }
         }
         this.factors.sort(Comparator.naturalOrder());
@@ -26,7 +26,7 @@ public final class Term extends Expression {
     }
 
     @Override
-    public Term of(Expression parent) {
+    public Term withParent(Expression parent) {
         return new Term(parent, this.factors);
     }
 
@@ -56,7 +56,7 @@ public final class Term extends Expression {
     }
 
     @Override
-    public Expression simplify() {
+    public Term simplify() {
         Deque<Expression> factors = new ArrayDeque<>(this.factors);
         List<Expression> result = new ArrayList<>(this.factors.size());
         while (! factors.isEmpty()) {
@@ -69,18 +69,20 @@ public final class Term extends Expression {
         if (result.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f).anyMatch(f->f.getValue() == 0)) {
             result = Collections.singletonList(IntegerConstant.of(0));
         }
-        return result.size() == 1 ? result.get(0) : new Term(null, result);
+        return new Term(null, result);
     }
 
     public List<Expression> getFactors() {
         return this.factors;
     }
 
-    public Expression getConstantExpression() {
-        return this.getFilteredTerm(e->e instanceof IntegerConstant).simplify();
+    public IntegerConstant getConstantExpression() {
+        return this.factors.stream().filter(e->e instanceof IntegerConstant)
+                .map(e->((IntegerConstant) e))
+                .findFirst().orElse(IntegerConstant.of(1));
     }
 
-    public Expression getNonConstantExpression() {
+    public Term getNonConstantExpression() {
         return this.getFilteredTerm(e->! (e instanceof IntegerConstant)).simplify();
     }
 
@@ -90,15 +92,8 @@ public final class Term extends Expression {
 
     @Override
     public int order() {
-        return ExpressionConstants.TERM_ORDER;
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        if (o instanceof Term) {
-            return compare(this.factors, ((Term) o).factors);
-        }
-        return super.compareTo(o);
+        return this.getNonConstantExpression().factors.stream().map(Expression::order)
+                .max(Comparator.naturalOrder()).orElse(ExpressionConstants.INTEGER_ORDER_OTHER);
     }
 
     @Override

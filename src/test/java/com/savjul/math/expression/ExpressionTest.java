@@ -3,6 +3,8 @@ package com.savjul.math.expression;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.ConcurrentModificationException;
+
 public class ExpressionTest {
     @Test
     public void testPolynomialWithExponent() {
@@ -51,7 +53,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").add(IntegerConstant.of(1));
         Expression e2 = Variable.of("x").add(IntegerConstant.of(3));
         Expression res = Polynomial.multiply((Polynomial) e1, (Polynomial) e2);
-        Assert.assertEquals("x^2 + 1x + 3x + 3", res.toString());
+        Assert.assertEquals("x^2 + 3x + 1x + 3", res.toString());
         Assert.assertEquals("x^2 + 4x + 3", res.simplify().toString());
     }
 
@@ -71,5 +73,13 @@ public class ExpressionTest {
         Expression e2 = Variable.of("x").exp(exp);
         Expression res = e1.multiply(e2);
         Assert.assertEquals("x^(2x + 2)", res.simplify().toString());
+    }
+
+    @Test
+    public void testZeroCancel() {
+        Expression e1 = Variable.of("x");
+        Expression e2 = Variable.of("x").multiply(IntegerConstant.of(-1));
+        Expression res = e1.add(e2);
+        Assert.assertEquals("0", res.simplify().toString());
     }
 }

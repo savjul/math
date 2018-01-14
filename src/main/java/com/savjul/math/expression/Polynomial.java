@@ -4,17 +4,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Polynomial extends Expression {
-    private final List<Expression> terms;
+    private final List<Term> terms;
 
-    private Polynomial(Expression parent, List<Expression> terms) {
+    private Polynomial(Expression parent, List<? extends Expression> terms) {
         super(parent);
         this.terms = new ArrayList<>();
         for (Expression term: terms) {
             if (term instanceof Polynomial) {
-                this.terms.addAll(((Polynomial) term).getTerms().stream().map(t->t.of(this)).collect(Collectors.toList()));
+                this.terms.addAll(((Polynomial) term).getTerms().stream().map(t->t.withParent(this)).collect(Collectors.toList()));
+            }
+            else if (term instanceof Term) {
+                this.terms.add((Term)term.withParent(this));
             }
             else {
-                this.terms.add(term.of(this));
+                this.terms.add(Term.of(term));
             }
         }
         this.terms.sort(Comparator.naturalOrder());
@@ -24,24 +27,25 @@ public final class Polynomial extends Expression {
         return new Polynomial(null, Arrays.asList(terms));
     }
 
-    public Polynomial of(Expression parent) {
+    public Polynomial withParent(Expression parent) {
         return new Polynomial(parent, this.terms);
     }
 
     public Expression add(Expression o) {
         if (o instanceof Polynomial) {
             Polynomial other = (Polynomial) o;
-            List<Expression> all = new ArrayList<>(this.terms.size() + other.terms.size());
+            List<Term> all = new ArrayList<>(this.terms.size() + other.terms.size());
             all.addAll(this.terms);
             all.addAll(other.terms);
             return new Polynomial(null, all);
         }
         else if (o instanceof Term) {
             Term other = (Term) o;
-            List<Expression> all = new ArrayList<>();
-            for (Expression e: this.terms) {
-                if (other != null && e instanceof Term && ((Term) e).getNonConstantExpression().equals(other.getNonConstantExpression())) {
-                    all.add(o.add(e));
+            List<Term> all = new ArrayList<>();
+            for (Term e: this.terms) {
+                if (other != null && e.getNonConstantExpression().equals(other.getNonConstantExpression())) {
+                    Term sum = Term.of(e.getConstantExpression().add(other.getConstantExpression()), e.getNonConstantExpression());
+                    all.add(sum);
                     other = null;
                 }
                 else {
@@ -69,7 +73,7 @@ public final class Polynomial extends Expression {
     public static Polynomial multiply(Expression e, Polynomial p) {
         List<Expression> result = new ArrayList<>();
         for (Expression part: p.getTerms()) {
-            result.add(e.multiply(part));
+            result.add(e.multiply(part).simplify());
         }
         return new Polynomial(null, result);
     }
@@ -84,16 +88,16 @@ public final class Polynomial extends Expression {
 
     @Override
     public Expression simplify() {
-        Deque<Expression> terms = new ArrayDeque<>(this.terms);
-        List<Expression> result = new ArrayList<>(this.terms.size());
+        Deque<Term> terms = new ArrayDeque<>(this.terms);
+        List<Term> result = new ArrayList<>(this.terms.size());
         while (! terms.isEmpty()) {
-            Expression current = terms.pollFirst();
-            while (! terms.isEmpty() && current.getClass().isInstance(terms.peekFirst())) {
-                current = current.add(terms.pollFirst()).simplify();
+            Term current = terms.pollFirst();
+            while (! terms.isEmpty() && current.getNonConstantExpression().equals(terms.peekFirst().getNonConstantExpression())) {
+                Term other = terms.pollFirst();
+                IntegerConstant c = current.getConstantExpression().add(other.getConstantExpression());
+                current = Term.of(c, current.getNonConstantExpression()).simplify();
             }
-            if (! (current instanceof IntegerConstant) || ((IntegerConstant) current).getValue() != 0) {
-                result.add(current.simplify());
-            }
+            result.add(current);
         }
         return result.size() == 1 ? result.get(0) : new Polynomial(null, result);
     }
@@ -103,7 +107,7 @@ public final class Polynomial extends Expression {
         return ExpressionConstants.POLYNOMIAL_ORDER;
     }
 
-    public List<Expression> getTerms() {
+    public List<Term> getTerms() {
         return this.terms;
     }
 

@@ -16,7 +16,7 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Variable of(Expression parent) {
+    public Variable withParent(Expression parent) {
         return new Variable(parent, this.name);
     }
 
