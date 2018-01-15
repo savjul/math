@@ -9,6 +9,9 @@ public final class Polynomial extends Expression {
     private Polynomial(Expression parent, List<? extends Expression> terms) {
         super(parent);
         this.terms = new ArrayList<>();
+        if (terms.stream().anyMatch(IntegerConstant.ZERO::equals)) {
+            int x = 1 + 1;
+        }
         for (Expression term: terms) {
             if (term instanceof Polynomial) {
                 this.terms.addAll(((Polynomial) term).getTerms().stream().map(t->t.withParent(this)).collect(Collectors.toList()));
@@ -34,39 +37,56 @@ public final class Polynomial extends Expression {
                 this.terms.stream().map(e->e.withContext(context)).collect(Collectors.toList()));
     }
 
+    private static Expression polynomial(List<Expression> terms) {
+        terms = terms.stream().filter(t->!t.equals(IntegerConstant.ZERO)).collect(Collectors.toList());
+        return terms.size() == 0 ? IntegerConstant.ZERO :
+                terms.size() == 1 ? terms.get(0) :
+                        new Polynomial(null, terms);
+    }
+
     public Expression plus(Expression o) {
-        if (o instanceof Polynomial) {
-            Polynomial other = (Polynomial) o;
-            List<Expression> all = new ArrayList<>(this.terms.size() + other.terms.size());
-            all.addAll(this.terms);
-            all.addAll(other.terms);
-            return new Polynomial(null, all);
+        if (o.equals(IntegerConstant.ZERO)) {
+            return this;
         }
-        else {
-            List<Expression> all = new ArrayList<>();
-            for (Expression current: this.terms) {
-                if (o != null && current.getNonCoefficients().equals(o.getNonCoefficients())) {
-                    Expression c = current.getCoefficient().plus(o.getCoefficient());
-                    if (!IntegerConstant.ZERO.equals(c)) {
-                        Expression term = current.getNonCoefficients().stream().reduce(c, Expression::times);
-                        all.add(term);
-                    }
-                    o = null;
-                }
-                else {
-                    all.add(current);
-                }
+        List<Expression> oterms = o instanceof Polynomial ? ((Polynomial) o).terms : Collections.singletonList(o);
+        List<Expression> terms = new ArrayList<>(this.terms.size() + oterms.size());
+        terms.addAll(this.terms);
+        terms.addAll(oterms);
+        terms.sort(Comparator.naturalOrder());
+        Expression previous = IntegerConstant.ZERO;
+        List<Expression> result = new ArrayList<>(terms.size());
+        for (Expression e: terms) {
+            if (e.getNonCoefficients().equals(previous.getNonCoefficients())) {
+                result.add(e.plus(previous));
+                e = IntegerConstant.ZERO;
             }
-            if (o != null) {
-                all.add(o);
+            else if (! IntegerConstant.ZERO.equals(previous)) {
+                result.add(previous);
             }
-            return all.size() == 0 ? IntegerConstant.ZERO : all.size() == 1 ? all.get(0) : new Polynomial(null, all);
+            previous = e;
         }
+        if (! IntegerConstant.ZERO.equals(previous)) {
+            result.add(previous);
+        }
+        return polynomial(result);
     }
 
     @Override
     public Expression times(Expression o) {
         return super.times(o);
+    }
+
+    public static Expression multiply(Expression e1, Expression e2) {
+        if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
+            return multiply((Polynomial) e1, (Polynomial) e2);
+        }
+        else if (e1 instanceof Polynomial) {
+            return multiply(e2, (Polynomial) e1);
+        }
+        else if (e2 instanceof Polynomial) {
+            return multiply(e1, (Polynomial) e2);
+        }
+        return e1.times(e2);
     }
 
     public static Polynomial multiply(Expression e, Polynomial p) {
@@ -87,36 +107,7 @@ public final class Polynomial extends Expression {
 
     @Override
     public Expression simplify() {
-        Deque<Expression> terms = new ArrayDeque<>(this.terms);
-        List<Expression> result = new ArrayList<>(this.terms.size());
-        while (! terms.isEmpty()) {
-            Expression current = terms.pollFirst();
-            while (! terms.isEmpty()) {
-                Expression other = terms.pollFirst();
-                List<Expression> currNonCoeff = current.getNonCoefficients();
-                List<Expression> otherNonCoeff = other.getNonCoefficients();
-                if (currNonCoeff.equals(otherNonCoeff)) {
-                    Expression c = current.getCoefficient().plus(other.getCoefficient());
-                    if (! IntegerConstant.ZERO.equals(c)) {
-                        current = current.getNonCoefficients().stream().reduce(c, Expression::times);
-                    }
-                    else {
-                        current = c;
-                        break;
-                    }
-                }
-                else {
-                    terms.addFirst(other);
-                    break;
-                }
-            }
-            if (! IntegerConstant.ZERO.equals(current.getCoefficient())) {
-                result.add(current.simplify());
-            }
-        }
-        return result.size() == 0 ? IntegerConstant.ZERO :
-                result.size() == 1 ? result.get(0) :
-                new Polynomial(null, result);
+        return this.terms.stream().map(Expression::simplify).reduce(IntegerConstant.ZERO, Expression::plus);
     }
 
     @Override

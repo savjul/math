@@ -12,14 +12,14 @@ public class VectorTest {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Vector v2 = Vector.of(Variable.of("x")
                 .plus(IntegerConstant.ONE), Variable.of("y"), IntegerConstant.MINUS_ONE.times(Variable.of("z")));
-        Vector res = v1.add(v2).simplify();
+        Vector res = v1.plus(v2).simplify();
         Assert.assertEquals("[2x + 1, 2y, 0]", res.toString());
     }
 
     @Test
     public void testMultiplicationByScalar() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
-        Vector res = v1.multiply(Variable.of("x")).multiply(IntegerConstant.of(4));
+        Vector res = v1.times(Variable.of("x")).times(IntegerConstant.of(4));
         Assert.assertEquals("[4x^2, 4xy, 4xz]", res.toString());
     }
 
@@ -70,9 +70,9 @@ public class VectorTest {
         Vector kxj = Vector.k.cross(Vector.j);
         Vector ixk = Vector.i.cross(Vector.k);
 
-        Assert.assertEquals(Vector.k.multiply(IntegerConstant.MINUS_ONE), jxi);
-        Assert.assertEquals(Vector.i.multiply(IntegerConstant.MINUS_ONE), kxj);
-        Assert.assertEquals(Vector.j.multiply(IntegerConstant.MINUS_ONE), ixk);
+        Assert.assertEquals(Vector.k.times(IntegerConstant.MINUS_ONE), jxi);
+        Assert.assertEquals(Vector.i.times(IntegerConstant.MINUS_ONE), kxj);
+        Assert.assertEquals(Vector.j.times(IntegerConstant.MINUS_ONE), ixk);
     }
 
     @Test
@@ -83,8 +83,7 @@ public class VectorTest {
         Vector c = Vector.of(Variable.of("c1"), Variable.of("c2"), Variable.of("c3"));
         Vector lhs = a.cross(b).cross(c);
         lhs = lhs.simplify();
-        Vector rhs = b.multiply(a.dot(c)).add(a.multiply(b.dot(c)).multiply(IntegerConstant.MINUS_ONE));
-        rhs = rhs.simplify();
+        Vector rhs = b.times(a.dot(c)).plus(a.times(b.dot(c)).times(IntegerConstant.MINUS_ONE));
         rhs = rhs.simplify();
         Assert.assertEquals(lhs, rhs);
     }

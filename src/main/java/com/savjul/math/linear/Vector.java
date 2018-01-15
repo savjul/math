@@ -28,7 +28,7 @@ public final class Vector {
         return new Vector(this.values.stream().map(Expression::simplify).collect(Collectors.toList()));
     }
 
-    public Vector add(Vector o) {
+    public Vector plus(Vector o) {
         check(o);
         List<Expression> result = new ArrayList<>();
         for (int idx = 0; idx < this.size(); idx++) {
@@ -37,7 +37,7 @@ public final class Vector {
         return new Vector(result);
     }
 
-    public Vector multiply(Expression scalar) {
+    public Vector times(Expression scalar) {
         return new Vector(this.values.stream().map(scalar::times).collect(Collectors.toList()));
     }
 
@@ -53,17 +53,17 @@ public final class Vector {
     public Vector cross(Vector o) {
         Expression i1 = this.get(1).times(o.get(2));
         Expression i2 = this.get(2).times(o.get(1));
-        Vector i3 = i.multiply(i1.plus(IntegerConstant.MINUS_ONE.times(i2)));
+        Vector i3 = i.times(i1.plus(IntegerConstant.MINUS_ONE.times(i2)));
 
         Expression j1 = this.get(2).times(o.get(0));
         Expression j2 = this.get(0).times(o.get(2));
-        Vector j3 = j.multiply(j1.plus(IntegerConstant.MINUS_ONE.times(j2)));
+        Vector j3 = j.times(j1.plus(IntegerConstant.MINUS_ONE.times(j2)));
 
         Expression k1 = this.get(0).times(o.get(1));
         Expression k2 = this.get(1).times(o.get(0));
-        Vector k3 = k.multiply(k1.plus(IntegerConstant.MINUS_ONE.times(k2)));
+        Vector k3 = k.times(k1.plus(IntegerConstant.MINUS_ONE.times(k2)));
 
-        return i3.add(j3).add(k3);
+        return i3.plus(j3).plus(k3);
     }
 
     private int size() {

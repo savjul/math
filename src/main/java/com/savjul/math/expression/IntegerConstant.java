@@ -36,8 +36,13 @@ public final class IntegerConstant extends Expression {
 
     @Override
     public Expression plus(Expression o) {
-        // necessary to prevent infinite recursion in Expression::plus
-        if (o instanceof IntegerConstant) {
+        if (this.equals(IntegerConstant.ZERO)) {
+            return o;
+        }
+        else if (o.equals(IntegerConstant.ZERO)) {
+            return this;
+        }
+        else if (o instanceof IntegerConstant) {
             return this.add((IntegerConstant) o);
         }
         else {
@@ -51,8 +56,16 @@ public final class IntegerConstant extends Expression {
 
     @Override
     public Expression times(Expression o) {
-        // Necessary to prevent constant ^ constants from accumulating in expressions
-        if (o instanceof IntegerConstant) {
+        if (this.equals(IntegerConstant.ZERO) || o.equals(IntegerConstant.ZERO)) {
+            return IntegerConstant.ZERO;
+        }
+        else if (this.equals(IntegerConstant.ONE)) {
+            return o;
+        }
+        else if (o.equals(IntegerConstant.ONE)) {
+            return this;
+        }
+        else if (o instanceof IntegerConstant) {
             return this.times((IntegerConstant) o);
         }
         else {

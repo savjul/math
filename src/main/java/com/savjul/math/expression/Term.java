@@ -34,68 +34,47 @@ public final class Term extends Expression {
         return new Term(null, this.factors.stream().map(f->f.withContext(context)).collect(Collectors.toList()));
     }
 
-    @Override
-    public Expression plus(Expression o) {
-        return Polynomial.of(this, o);
+    private static Expression term(List<Expression> factors) {
+        factors = factors.stream().filter(f->!IntegerConstant.ONE.equals(f)).collect(Collectors.toList());
+        return factors.size() == 0 ? IntegerConstant.ONE : factors.size() == 1 ? factors.get(0) :
+                new Term(null, factors);
+
     }
 
     @Override
     public Expression times(Expression o) {
-        if (o instanceof Term) {
-            Term other = (Term) o;
-            List<Expression> all = new ArrayList<>(this.factors.size() + other.factors.size());
-            all.addAll(this.factors);
-            all.addAll(other.factors);
-            return new Term(null, all);
+        if (o.equals(IntegerConstant.ONE)) {
+            return this;
         }
-        else {
-            List<Expression> all = new ArrayList<>();
-            for (Expression e: this.factors) {
-                if (o != null && e.getBase().equals(o.getBase())) {
-                    all.add(e.times(o));
-                    o = null;
-                }
-                else {
-                    all.add(e);
-                }
-            }
-            if (o == null) {
-                return new Term(null, all);
-            }
-            else {
-                return super.times(o);
-            }
+        else if (o.equals(IntegerConstant.ZERO)) {
+            return IntegerConstant.ZERO;
         }
+        List<Expression> ofactors = o instanceof Term ? ((Term) o).factors : Collections.singletonList(o);
+        List<Expression> factors = new ArrayList<>(this.factors.size() + ofactors.size());
+        factors.addAll(this.factors);
+        factors.addAll(ofactors);
+        factors.sort(Comparator.naturalOrder());
+        Expression previous = IntegerConstant.ONE;
+        List<Expression> result = new ArrayList<>(factors.size());
+        for (Expression e: factors) {
+            if (e.getBase().equals(previous.getBase())) {
+                result.add(e.times(previous));
+                e = IntegerConstant.ONE;
+            }
+            else if (! IntegerConstant.ONE.equals(previous)) {
+                result.add(previous);
+            }
+            previous = e;
+        }
+        if (! IntegerConstant.ONE.equals(previous)) {
+            result.add(previous);
+        }
+        return term(result);
     }
 
     @Override
     public Expression simplify() {
-        Deque<Expression> factors = new ArrayDeque<>(this.factors);
-        List<Expression> result = new ArrayList<>(this.factors.size());
-        while (! factors.isEmpty()) {
-            Expression current = factors.pollFirst();
-            while (! factors.isEmpty() && current.getClass().isInstance(factors.peekFirst())) {
-                current = current.times(factors.pollFirst());
-            }
-            while (! factors.isEmpty() && factors.peekFirst() instanceof Polynomial) {
-                result.add(current);
-                Term factor = new Term(null, result);
-                Polynomial polynomial = (Polynomial) factors.pollFirst();
-                current = Polynomial.multiply(factor, polynomial);
-                result = new ArrayList<>();
-            }
-            if (! current.equals(this)) {
-                current = current.simplify();
-            }
-            if (! isOne(current)) {
-                result.add(current);
-            }
-        }
-        if (result.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f).anyMatch(f->f.getValue() == 0)) {
-            result = Collections.singletonList(IntegerConstant.ZERO);
-        }
-        return result.size() == 0 ? IntegerConstant.ONE : result.size() == 1 ? result.get(0) :
-                new Term(null, result);
+        return this.factors.stream().map(Expression::simplify).reduce(IntegerConstant.ONE, Polynomial::multiply);
     }
 
     public List<Expression> getFactors() {

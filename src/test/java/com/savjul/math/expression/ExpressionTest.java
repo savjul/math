@@ -50,7 +50,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").plus(IntegerConstant.ONE);
         Expression e2 = Variable.of("y").plus(IntegerConstant.of(3));
         Expression res = e1.times(e2);
-        Assert.assertEquals("(x + 1)(y + 3)", res.simplify().toString());
+        Assert.assertEquals("(x + 1)(y + 3)", res.toString());
     }
 
     @Test
@@ -153,6 +153,6 @@ public class ExpressionTest {
         Expression res = e1.times(e2);
         Assert.assertEquals("(x^y)(x + y + 3)", res.toString());
         Assert.assertEquals("3^5(3 + 3 + 5)", res.withContext(c).toString());
-        Assert.assertEquals("2673", res.withContext(c).simplify().simplify().toString());
+        Assert.assertEquals("2673", res.withContext(c).simplify().toString());
     }
 }

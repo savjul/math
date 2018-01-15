@@ -26,26 +26,6 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Expression plus(Expression o) {
-        if (this.equals(o)) {
-            return IntegerConstant.TWO.times(o);
-        }
-        else {
-            return Polynomial.of(this, o);
-        }
-    }
-
-    @Override
-    public Expression times(Expression o) {
-        if (this.equals(o)) {
-            return Exponent.of(this, IntegerConstant.of(2));
-        }
-        else {
-            return super.times(o);
-        }
-    }
-
-    @Override
     public int order() {
         return ExpressionConstants.VARIABLE_ORDER;
     }
