@@ -21,9 +21,9 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Expression add(Expression o) {
+    public Expression plus(Expression o) {
         if (this.equals(o)) {
-            return IntegerConstant.TWO.multiply(o);
+            return IntegerConstant.TWO.times(o);
         }
         else {
             return Polynomial.of(this, o);
@@ -31,12 +31,12 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public Expression multiply(Expression o) {
+    public Expression times(Expression o) {
         if (this.equals(o)) {
             return Exponent.of(this, IntegerConstant.of(2));
         }
         else {
-            return super.multiply(o);
+            return super.times(o);
         }
     }
 

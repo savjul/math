@@ -2,7 +2,6 @@ package com.savjul.math.expression;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public final class Term extends Expression {
     private final List<Expression> factors;
@@ -31,24 +30,12 @@ public final class Term extends Expression {
     }
 
     @Override
-    public Expression add(Expression o) {
-        if (o instanceof Term) {
-            Term other = (Term) o;
-            if (other.getNonConstantExpression().equals(this.getNonConstantExpression())) {
-                Optional<Expression> nonConstant = this.getNonConstantExpression();
-                Expression result = Term.of(this.getConstantExpression().orElse(IntegerConstant.ONE)
-                        .add(other.getConstantExpression().orElse(IntegerConstant.ONE)));
-                if (nonConstant.isPresent()) {
-                    result = result.multiply(nonConstant.get());
-                }
-                return result;
-            }
-        }
+    public Expression plus(Expression o) {
         return Polynomial.of(this, o);
     }
 
     @Override
-    public Expression multiply(Expression o) {
+    public Expression times(Expression o) {
         if (o instanceof Term) {
             Term other = (Term) o;
             List<Expression> all = new ArrayList<>(this.factors.size() + other.factors.size());
@@ -57,7 +44,22 @@ public final class Term extends Expression {
             return new Term(null, all);
         }
         else {
-            return super.multiply(o);
+            List<Expression> all = new ArrayList<>();
+            for (Expression e: this.factors) {
+                if (o != null && e.getBase().equals(o.getBase())) {
+                    all.add(e.times(o));
+                    o = null;
+                }
+                else {
+                    all.add(e);
+                }
+            }
+            if (o == null) {
+                return new Term(null, all);
+            }
+            else {
+                return super.times(o);
+            }
         }
     }
 
@@ -68,7 +70,7 @@ public final class Term extends Expression {
         while (! factors.isEmpty()) {
             Expression current = factors.pollFirst();
             while (! factors.isEmpty() && current.getClass().isInstance(factors.peekFirst())) {
-                current = current.multiply(factors.pollFirst());
+                current = current.times(factors.pollFirst());
             }
             while (! factors.isEmpty() && factors.peekFirst() instanceof Polynomial) {
                 result.add(current);
@@ -95,43 +97,15 @@ public final class Term extends Expression {
         return this.factors;
     }
 
-    public static Optional<IntegerConstant> getCoefficient(Expression expression) {
-        if (expression instanceof Term) {
-            return ((Term) expression).getConstantExpression();
-        }
-        else if (expression instanceof IntegerConstant) {
-            return Optional.of((IntegerConstant)expression);
-        }
-        else {
-            return Optional.empty();
-        }
+    @Override
+    public IntegerConstant getCoefficient() {
+        return this.factors.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f)
+                .findFirst().orElse(IntegerConstant.ONE);
     }
 
-    public static Optional<Expression> getNonCoefficient(Expression expression) {
-        if (expression instanceof Term) {
-            return ((Term) expression).getNonConstantExpression();
-        }
-        else if (expression instanceof IntegerConstant) {
-            return Optional.empty();
-        }
-        else {
-            return Optional.of(expression);
-        }
-    }
-
-    private Optional<IntegerConstant> getConstantExpression() {
-        return this.factors.stream().filter(e->e instanceof IntegerConstant).map(e->(IntegerConstant)e)
-                .findFirst();
-    }
-
-    private Optional<Expression> getNonConstantExpression() {
-        List<Expression> nonConstants = getNonConstants().collect(Collectors.toList());
-        return nonConstants.size() == 0 ? Optional.empty() :
-                Optional.of(nonConstants.size() == 1 ? nonConstants.get(0) : new Term(null, nonConstants));
-    }
-
-    private Stream<Expression> getNonConstants() {
-        return this.factors.stream().filter(e->!(e instanceof IntegerConstant));
+    @Override
+    public List<Expression> getNonCoefficients() {
+        return this.factors.stream().filter(f->! (f instanceof IntegerConstant)).collect(Collectors.toList());
     }
 
     private boolean isOne(Expression e) {
@@ -140,19 +114,18 @@ public final class Term extends Expression {
 
     @Override
     public int order() {
-        return this.getNonConstants().map(Expression::order)
+        return this.getNonCoefficients().stream().map(Expression::order)
                 .max(Comparator.naturalOrder()).orElse(ExpressionConstants.INTEGER_ORDER_OTHER);
     }
 
     @Override
     public int compareTo(Expression o) {
         if (o instanceof Term) {
-            int result = compare(this.getNonConstants().collect(Collectors.toList()),
-                    ((Term) o).getNonConstants().collect(Collectors.toList()));
+            int result = compare(this.getNonCoefficients(), o.getNonCoefficients());
             if (result == 0) {
-                Optional<IntegerConstant> thisCo = this.getConstantExpression();
-                Optional<IntegerConstant> otherCo = ((Term) o).getConstantExpression();
-                return ! thisCo.isPresent() ? 1 : ! otherCo.isPresent() ? -1 : thisCo.get().compareTo(otherCo.get());
+                IntegerConstant thisCo = this.getCoefficient();
+                IntegerConstant otherCo = o.getCoefficient();
+                return thisCo.compareTo(otherCo);
             }
             else {
                 return result;

@@ -1,6 +1,7 @@
 package com.savjul.math.expression;
 
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
@@ -20,17 +21,40 @@ public abstract class Expression implements Comparable<Expression> {
         return Integer.MAX_VALUE;
     }
 
-    public Expression add(Expression o) {
+    public IntegerConstant getCoefficient() {
+        return IntegerConstant.ONE;
+    }
+
+    public List<Expression> getNonCoefficients() {
+        return Collections.singletonList(this);
+    }
+
+    public Expression getBase() {
+        return this;
+    }
+
+    public Expression getPower() {
+        return IntegerConstant.ONE;
+    }
+
+    public Expression plus(Expression o) {
         if (this.equals(IntegerConstant.ZERO)) {
             return o;
         }
         else if (o.equals(IntegerConstant.ZERO)) {
             return this;
         }
+        else if (o instanceof Polynomial) {
+            return o.plus(this);
+        }
+        else if (this.getNonCoefficients().equals(o.getNonCoefficients())) {
+            Expression c = this.getCoefficient().plus(o.getCoefficient());
+            return this.getNonCoefficients().stream().reduce(c, Expression::times);
+        }
         return Polynomial.of(this, o);
     }
 
-    public Expression multiply(Expression o) {
+    public Expression times(Expression o) {
         if (this.equals(IntegerConstant.ZERO) || o.equals(IntegerConstant.ZERO)) {
             return IntegerConstant.ZERO;
         }
@@ -40,10 +64,16 @@ public abstract class Expression implements Comparable<Expression> {
         else if (o.equals(IntegerConstant.ONE)) {
             return this;
         }
+        else if (o instanceof Term) {
+            return o.times(this);
+        }
+        else if (this.getBase().equals(o.getBase())) {
+            return Exponent.of(this.getBase(), this.getPower().plus(o.getPower()));
+        }
         return Term.of(this, o);
     }
 
-    public Expression exp(Expression other) {
+    public Expression pow(Expression other) {
         return Exponent.of(this, other);
     }
 

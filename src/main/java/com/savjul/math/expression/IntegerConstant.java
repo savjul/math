@@ -1,5 +1,7 @@
 package com.savjul.math.expression;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public final class IntegerConstant extends Expression {
@@ -28,28 +30,44 @@ public final class IntegerConstant extends Expression {
         return new IntegerConstant(parent, this.value);
     }
 
-    public IntegerConstant add(IntegerConstant o) {
+    private IntegerConstant add(IntegerConstant o) {
         return new IntegerConstant(null,this.value + o.value);
     }
 
     @Override
-    public Expression add(Expression o) {
+    public Expression plus(Expression o) {
+        // necessary to prevent infinite recursion in Expression::plus
         if (o instanceof IntegerConstant) {
             return this.add((IntegerConstant) o);
         }
         else {
-            return super.add(o);
+            return super.plus(o);
+        }
+    }
+
+    private IntegerConstant multiply(IntegerConstant o) {
+        return new IntegerConstant(null,this.value * o.value);
+    }
+
+    @Override
+    public Expression times(Expression o) {
+        // Necessary to prevent constant ^ constants from accumulating in expressions
+        if (o instanceof IntegerConstant) {
+            return this.multiply((IntegerConstant) o);
+        }
+        else {
+            return super.times(o);
         }
     }
 
     @Override
-    public Expression multiply(Expression o) {
-        if (o instanceof IntegerConstant) {
-            return new IntegerConstant(null, this.value * ((IntegerConstant)o).value);
-        }
-        else {
-            return super.multiply(o);
-        }
+    public IntegerConstant getCoefficient() {
+        return this;
+    }
+
+    @Override
+    public List<Expression> getNonCoefficients() {
+        return Collections.emptyList();
     }
 
     @Override

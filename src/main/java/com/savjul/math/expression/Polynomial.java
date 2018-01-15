@@ -1,7 +1,5 @@
 package com.savjul.math.expression;
 
-import org.omg.PortableInterceptor.INACTIVE;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +28,7 @@ public final class Polynomial extends Expression {
         return new Polynomial(parent, this.terms);
     }
 
-    public Expression add(Expression o) {
+    public Expression plus(Expression o) {
         if (o instanceof Polynomial) {
             Polynomial other = (Polynomial) o;
             List<Expression> all = new ArrayList<>(this.terms.size() + other.terms.size());
@@ -41,16 +39,11 @@ public final class Polynomial extends Expression {
         else {
             List<Expression> all = new ArrayList<>();
             for (Expression current: this.terms) {
-                if (o != null && Term.getNonCoefficient(current).equals(Term.getNonCoefficient(o))) {
-                    Expression currCoef = Term.getCoefficient(current).orElse(IntegerConstant.ONE);
-                    Expression otherCoef = Term.getCoefficient(o).orElse(IntegerConstant.ONE);
-                    Expression sum = currCoef.add(otherCoef);
-                    Optional<Expression> nonCoeff = Term.getNonCoefficient(current);
-                    if (nonCoeff.isPresent()) {
-                        sum = sum.multiply(nonCoeff.get());
-                    }
-                    if (Term.getCoefficient(sum).orElse(IntegerConstant.ONE).getValue() != 0) {
-                        all.add(sum);
+                if (o != null && current.getNonCoefficients().equals(o.getNonCoefficients())) {
+                    Expression c = current.getCoefficient().plus(o.getCoefficient());
+                    if (!IntegerConstant.ZERO.equals(c)) {
+                        Expression term = current.getNonCoefficients().stream().reduce(c, Expression::times);
+                        all.add(term);
                     }
                     o = null;
                 }
@@ -66,14 +59,14 @@ public final class Polynomial extends Expression {
     }
 
     @Override
-    public Expression multiply(Expression o) {
-        return super.multiply(o);
+    public Expression times(Expression o) {
+        return super.times(o);
     }
 
     public static Polynomial multiply(Expression e, Polynomial p) {
         List<Expression> result = new ArrayList<>();
         for (Expression part: p.getTerms()) {
-            result.add(e.multiply(part));
+            result.add(e.times(part));
         }
         return new Polynomial(null, result);
     }
@@ -94,21 +87,24 @@ public final class Polynomial extends Expression {
             Expression current = terms.pollFirst();
             while (! terms.isEmpty()) {
                 Expression other = terms.pollFirst();
-                Optional<Expression> currNonCoeff = Term.getNonCoefficient(current);
-                Optional<Expression> otherNonCoeff = Term.getNonCoefficient(other);
+                List<Expression> currNonCoeff = current.getNonCoefficients();
+                List<Expression> otherNonCoeff = other.getNonCoefficients();
                 if (currNonCoeff.equals(otherNonCoeff)) {
-                    Expression coeff = Term.getCoefficient(current).orElse(IntegerConstant.ONE)
-                            .add(Term.getCoefficient(other).orElse(IntegerConstant.ONE));
-                    current = currNonCoeff
-                            .map(coeff::multiply)
-                            .orElse(coeff);
+                    Expression c = current.getCoefficient().plus(other.getCoefficient());
+                    if (! IntegerConstant.ZERO.equals(c)) {
+                        current = current.getNonCoefficients().stream().reduce(c, Expression::times);
+                    }
+                    else {
+                        current = c;
+                        break;
+                    }
                 }
                 else {
                     terms.addFirst(other);
                     break;
                 }
             }
-            if (Term.getCoefficient(current).orElse(IntegerConstant.ONE).getValue() != 0) {
+            if (current.getCoefficient().getValue() != 0) {
                 result.add(current.simplify());
             }
         }

@@ -2,7 +2,6 @@ package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.IntegerConstant;
-import com.savjul.math.expression.Term;
 import com.savjul.math.expression.Variable;
 import org.junit.Assert;
 import org.junit.Test;
@@ -12,7 +11,7 @@ public class VectorTest {
     public void testVectorAddition() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Vector v2 = Vector.of(Variable.of("x")
-                .add(IntegerConstant.ONE), Variable.of("y"), IntegerConstant.MINUS_ONE.multiply(Variable.of("z")));
+                .plus(IntegerConstant.ONE), Variable.of("y"), IntegerConstant.MINUS_ONE.times(Variable.of("z")));
         Vector res = v1.add(v2).simplify();
         Assert.assertEquals("[2x + 1, 2y, 0]", res.toString());
     }

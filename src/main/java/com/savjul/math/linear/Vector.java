@@ -32,36 +32,36 @@ public final class Vector {
         check(o);
         List<Expression> result = new ArrayList<>();
         for (int idx = 0; idx < this.size(); idx++) {
-            result.add(this.get(idx).add(o.get(idx)));
+            result.add(this.get(idx).plus(o.get(idx)));
         }
         return new Vector(result);
     }
 
     public Vector multiply(Expression scalar) {
-        return new Vector(this.values.stream().map(scalar::multiply).collect(Collectors.toList()));
+        return new Vector(this.values.stream().map(scalar::times).collect(Collectors.toList()));
     }
 
     public Expression dot(Vector o) {
         check(o);
         Expression result = IntegerConstant.ZERO;
         for (int idx = 0; idx < this.size(); idx++) {
-            result = result.add(this.get(idx).multiply(o.get(idx)));
+            result = result.plus(this.get(idx).times(o.get(idx)));
         }
         return result;
     }
 
     public Vector cross(Vector o) {
-        Expression i1 = this.get(1).multiply(o.get(2));
-        Expression i2 = this.get(2).multiply(o.get(1));
-        Vector i3 = i.multiply(i1.add(IntegerConstant.MINUS_ONE.multiply(i2)));
+        Expression i1 = this.get(1).times(o.get(2));
+        Expression i2 = this.get(2).times(o.get(1));
+        Vector i3 = i.multiply(i1.plus(IntegerConstant.MINUS_ONE.times(i2)));
 
-        Expression j1 = this.get(2).multiply(o.get(0));
-        Expression j2 = this.get(0).multiply(o.get(2));
-        Vector j3 = j.multiply(j1.add(IntegerConstant.MINUS_ONE.multiply(j2)));
+        Expression j1 = this.get(2).times(o.get(0));
+        Expression j2 = this.get(0).times(o.get(2));
+        Vector j3 = j.multiply(j1.plus(IntegerConstant.MINUS_ONE.times(j2)));
 
-        Expression k1 = this.get(0).multiply(o.get(1));
-        Expression k2 = this.get(1).multiply(o.get(0));
-        Vector k3 = k.multiply(k1.add(IntegerConstant.MINUS_ONE.multiply(k2)));
+        Expression k1 = this.get(0).times(o.get(1));
+        Expression k2 = this.get(1).times(o.get(0));
+        Vector k3 = k.multiply(k1.plus(IntegerConstant.MINUS_ONE.times(k2)));
 
         return i3.add(j3).add(k3);
     }

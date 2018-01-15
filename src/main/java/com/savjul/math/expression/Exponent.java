@@ -4,62 +4,43 @@ import java.util.Objects;
 
 public final class Exponent extends Expression {
     private final Expression base;
-    private final Expression exponent;
+    private final Expression power;
 
-    private Exponent(Expression parent, Expression base, Expression exponent) {
+    private Exponent(Expression parent, Expression base, Expression power) {
         super(parent);
         Objects.requireNonNull(base);
-        Objects.requireNonNull(exponent);
+        Objects.requireNonNull(power);
         this.base = base.withParent(this);
-        this.exponent = exponent.withParent(this);
+        this.power = power.withParent(this);
     }
 
     public static Exponent of(Expression base, Expression exponent) {
         return new Exponent(null, base, exponent);
     }
 
+    @Override
     public Expression getBase() {
         return base;
     }
 
-    public Expression getExponent() {
-        return exponent;
+    @Override
+    public Expression getPower() {
+        return power;
     }
 
     @Override
     public Exponent withParent(Expression parent) {
-        return new Exponent(parent, this.base, this.exponent);
-    }
-
-    @Override
-    public Expression add(Expression o) {
-        if (this.equals(o)) {
-            return IntegerConstant.TWO.multiply(this);
-        }
-        else {
-            return super.add(o);
-        }
-    }
-
-    @Override
-    public Expression multiply(Expression other) {
-        if (other instanceof Exponent) {
-            Exponent o = (Exponent) other;
-            if (this.base.equals(o.base)) {
-                return Exponent.of(this.base, this.exponent.add(o.exponent));
-            }
-        }
-        return super.multiply(other);
+        return new Exponent(parent, this.base, this.power);
     }
 
     @Override
     public Expression simplify() {
-        return new Exponent(null, this.base.simplify(), this.exponent.simplify());
+        return new Exponent(null, this.base.simplify(), this.power.simplify());
     }
 
     @Override
     public String render() {
-        return this.base.render() + "^" + this.exponent.render();
+        return this.base.render() + "^" + this.power.render();
     }
 
     @Override
@@ -72,7 +53,7 @@ public final class Exponent extends Expression {
         if (o instanceof Exponent) {
             Exponent other = (Exponent) o;
             int result = this.base.compareTo(other.base);
-            return result != 0 ? result : this.exponent.compareTo(other.exponent);
+            return result != 0 ? result : this.power.compareTo(other.power);
         }
         return super.compareTo(o);
     }
@@ -85,13 +66,13 @@ public final class Exponent extends Expression {
         Exponent exponent1 = (Exponent) o;
 
         if (!base.equals(exponent1.base)) return false;
-        return exponent.equals(exponent1.exponent);
+        return power.equals(exponent1.power);
     }
 
     @Override
     public int hashCode() {
         int result = base.hashCode();
-        result = 31 * result + exponent.hashCode();
+        result = 31 * result + power.hashCode();
         return result;
     }
 }
