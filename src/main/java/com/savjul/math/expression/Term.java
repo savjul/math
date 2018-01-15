@@ -30,6 +30,11 @@ public final class Term extends Expression {
     }
 
     @Override
+    public Expression withContext(Context context) {
+        return new Term(null, this.factors.stream().map(f->f.withContext(context)).collect(Collectors.toList()));
+    }
+
+    @Override
     public Expression plus(Expression o) {
         return Polynomial.of(this, o);
     }
@@ -98,9 +103,9 @@ public final class Term extends Expression {
     }
 
     @Override
-    public IntegerConstant getCoefficient() {
-        return this.factors.stream().filter(f->f instanceof IntegerConstant).map(f->(IntegerConstant)f)
-                .findFirst().orElse(IntegerConstant.ONE);
+    public Expression getCoefficient() {
+        return this.factors.stream().filter(f->f instanceof IntegerConstant)
+                .reduce(IntegerConstant.ONE, Expression::times);
     }
 
     @Override
@@ -123,8 +128,8 @@ public final class Term extends Expression {
         if (o instanceof Term) {
             int result = compare(this.getNonCoefficients(), o.getNonCoefficients());
             if (result == 0) {
-                IntegerConstant thisCo = this.getCoefficient();
-                IntegerConstant otherCo = o.getCoefficient();
+                Expression thisCo = this.getCoefficient();
+                Expression otherCo = o.getCoefficient();
                 return thisCo.compareTo(otherCo);
             }
             else {

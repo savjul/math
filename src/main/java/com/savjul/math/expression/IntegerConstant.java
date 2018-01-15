@@ -45,7 +45,7 @@ public final class IntegerConstant extends Expression {
         }
     }
 
-    private IntegerConstant multiply(IntegerConstant o) {
+    private IntegerConstant times(IntegerConstant o) {
         return new IntegerConstant(null,this.value * o.value);
     }
 
@@ -53,15 +53,42 @@ public final class IntegerConstant extends Expression {
     public Expression times(Expression o) {
         // Necessary to prevent constant ^ constants from accumulating in expressions
         if (o instanceof IntegerConstant) {
-            return this.multiply((IntegerConstant) o);
+            return this.times((IntegerConstant) o);
         }
         else {
             return super.times(o);
         }
     }
 
+    private Expression pow(IntegerConstant o) {
+        if (o.value > -1) {
+            return new IntegerConstant(null, pow(this.value, o.value));
+        }
+        else {
+            return super.pow(o);
+        }
+    }
+
+    private int pow(int base, int power) {
+        int res = 1;
+        for (int idx = 0; idx < power; idx++) {
+            res *= base;
+        }
+        return res;
+    }
+
     @Override
-    public IntegerConstant getCoefficient() {
+    public Expression pow(Expression o) {
+        if (o instanceof IntegerConstant) {
+            return this.pow((IntegerConstant) o);
+        }
+        else {
+            return super.pow(o);
+        }
+    }
+
+    @Override
+    public Expression getCoefficient() {
         return this;
     }
 

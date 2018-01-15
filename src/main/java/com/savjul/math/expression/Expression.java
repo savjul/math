@@ -14,6 +14,9 @@ public abstract class Expression implements Comparable<Expression> {
 
     public abstract Expression withParent(Expression parent);
 
+    public Expression withContext(Context context) {
+        return this;
+    }
 
     public abstract String render();
 
@@ -21,7 +24,7 @@ public abstract class Expression implements Comparable<Expression> {
         return Integer.MAX_VALUE;
     }
 
-    public IntegerConstant getCoefficient() {
+    public Expression getCoefficient() {
         return IntegerConstant.ONE;
     }
 
@@ -73,8 +76,8 @@ public abstract class Expression implements Comparable<Expression> {
         return Term.of(this, o);
     }
 
-    public Expression pow(Expression other) {
-        return Exponent.of(this, other);
+    public Expression pow(Expression o) {
+        return Exponent.of(this, o);
     }
 
     public Expression simplify() {

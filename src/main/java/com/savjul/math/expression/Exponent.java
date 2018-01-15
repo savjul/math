@@ -34,13 +34,19 @@ public final class Exponent extends Expression {
     }
 
     @Override
+    public Expression withContext(Context context) {
+        return new Exponent(null, this.base.withContext(context), this.power.withContext(context));
+    }
+
+    @Override
     public Expression simplify() {
-        return new Exponent(null, this.base.simplify(), this.power.simplify());
+        return this.base.simplify().pow(this.power.simplify());
     }
 
     @Override
     public String render() {
-        return this.base.render() + "^" + this.power.render();
+        String result = this.base.render() + "^" + this.power.render();
+        return getParent() instanceof Term && ! (this.power instanceof IntegerConstant) ? "(" + result + ")" : result;
     }
 
     @Override

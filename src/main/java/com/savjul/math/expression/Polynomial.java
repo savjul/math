@@ -28,6 +28,12 @@ public final class Polynomial extends Expression {
         return new Polynomial(parent, this.terms);
     }
 
+    @Override
+    public Expression withContext(Context context) {
+        return new Polynomial(null,
+                this.terms.stream().map(e->e.withContext(context)).collect(Collectors.toList()));
+    }
+
     public Expression plus(Expression o) {
         if (o instanceof Polynomial) {
             Polynomial other = (Polynomial) o;
@@ -104,7 +110,7 @@ public final class Polynomial extends Expression {
                     break;
                 }
             }
-            if (current.getCoefficient().getValue() != 0) {
+            if (! IntegerConstant.ZERO.equals(current.getCoefficient())) {
                 result.add(current.simplify());
             }
         }

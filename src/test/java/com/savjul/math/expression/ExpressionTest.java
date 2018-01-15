@@ -140,6 +140,19 @@ public class ExpressionTest {
         Expression e2 = Variable.of("x");
         Expression res = e1.times(e2);
         Assert.assertEquals("x^(y + 1)", res.toString());
+    }
 
+    @Test
+    public void testWithContext() {
+        Expression e1 = Variable.of("x").pow(Variable.of("y"));
+        Expression e2 = Variable.of("y").plus(Variable.of("x")).plus(IntegerConstant.of(3));
+        Context c = ContextBuilder.get()
+                .add("x", 3)
+                .add("y", 5)
+                .build();
+        Expression res = e1.times(e2);
+        Assert.assertEquals("(x^y)(x + y + 3)", res.toString());
+        Assert.assertEquals("3^5(3 + 3 + 5)", res.withContext(c).toString());
+        Assert.assertEquals("2673", res.withContext(c).simplify().simplify().toString());
     }
 }

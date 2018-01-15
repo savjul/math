@@ -21,6 +21,11 @@ public final class Variable extends Expression {
     }
 
     @Override
+    public Expression withContext(Context context) {
+        return context.getValue(this.name, this);
+    }
+
+    @Override
     public Expression plus(Expression o) {
         if (this.equals(o)) {
             return IntegerConstant.TWO.times(o);
