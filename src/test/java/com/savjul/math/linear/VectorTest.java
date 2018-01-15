@@ -1,8 +1,6 @@
 package com.savjul.math.linear;
 
-import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.IntegerConstant;
-import com.savjul.math.expression.Variable;
+import com.savjul.math.expression.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -88,4 +86,17 @@ public class VectorTest {
         Assert.assertEquals(lhs, rhs);
     }
 
+    @Test
+    public void testDotProductWithContext() {
+        Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
+        Expression res = v1.dot(v1);
+        Assert.assertEquals("x^2 + y^2 + z^2", res.toString());
+        Context context = ContextBuilder.get()
+                .add("x", 1)
+                .add("y", 2)
+                .add("z", 3).build();
+        Expression res2 = res.withContext(context);
+        Assert.assertEquals("1^2 + 2^2 + 3^2", res2.toString());
+        Assert.assertEquals("14", res2.simplify().toString());
+    }
 }

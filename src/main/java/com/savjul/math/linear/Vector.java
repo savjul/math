@@ -1,5 +1,6 @@
 package com.savjul.math.linear;
 
+import com.savjul.math.expression.Context;
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.IntegerConstant;
 
@@ -22,6 +23,10 @@ public final class Vector {
 
     public static Vector of(Expression... values) {
         return new Vector(Arrays.asList(values));
+    }
+
+    public Vector withContext(Context context) {
+        return new Vector(this.values.stream().map(e->e.withContext(context)).collect(Collectors.toList()));
     }
 
     public Vector simplify() {
