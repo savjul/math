@@ -20,8 +20,8 @@ public final class Term extends Expression {
         this.factors.sort(Comparator.naturalOrder());
     }
 
-    public static Term of(Expression... factors) {
-        return new Term(null, Arrays.asList(factors));
+    public static Expression of(Expression... factors) {
+        return term(Arrays.asList(factors));
     }
 
     @Override
@@ -35,41 +35,15 @@ public final class Term extends Expression {
     }
 
     private static Expression term(List<Expression> factors) {
-        factors = factors.stream().filter(f->!IntegerConstant.ONE.equals(f)).collect(Collectors.toList());
-        return factors.size() == 0 ? IntegerConstant.ONE : factors.size() == 1 ? factors.get(0) :
-                new Term(null, factors);
-
+        return combine(factors, l->new Term(null, l), IntegerConstant.ONE);
     }
 
     @Override
     public Expression times(Expression o) {
-        if (o.equals(IntegerConstant.ONE)) {
-            return this;
-        }
-        else if (o.equals(IntegerConstant.ZERO)) {
-            return IntegerConstant.ZERO;
-        }
-        List<Expression> ofactors = o instanceof Term ? ((Term) o).factors : Collections.singletonList(o);
-        List<Expression> factors = new ArrayList<>(this.factors.size() + ofactors.size());
-        factors.addAll(this.factors);
-        factors.addAll(ofactors);
-        factors.sort(Comparator.naturalOrder());
-        Expression previous = IntegerConstant.ONE;
-        List<Expression> result = new ArrayList<>(factors.size());
-        for (Expression e: factors) {
-            if (e.getBase().equals(previous.getBase())) {
-                result.add(e.times(previous));
-                e = IntegerConstant.ONE;
-            }
-            else if (! IntegerConstant.ONE.equals(previous)) {
-                result.add(previous);
-            }
-            previous = e;
-        }
-        if (! IntegerConstant.ONE.equals(previous)) {
-            result.add(previous);
-        }
-        return term(result);
+        return this.applyOp(Expression::times, o,
+                (e) -> e instanceof Term ? ((Term) e).factors : Collections.singletonList(e),
+                (e1, e2) -> e1.getBase().equals(e2.getBase()),
+                Term::term);
     }
 
     @Override

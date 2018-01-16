@@ -9,9 +9,6 @@ public final class Polynomial extends Expression {
     private Polynomial(Expression parent, List<? extends Expression> terms) {
         super(parent);
         this.terms = new ArrayList<>();
-        if (terms.stream().anyMatch(IntegerConstant.ZERO::equals)) {
-            int x = 1 + 1;
-        }
         for (Expression term: terms) {
             if (term instanceof Polynomial) {
                 this.terms.addAll(((Polynomial) term).getTerms().stream().map(t->t.withParent(this)).collect(Collectors.toList()));
@@ -23,8 +20,8 @@ public final class Polynomial extends Expression {
         this.terms.sort(Comparator.naturalOrder());
     }
 
-    public static Polynomial of(Expression... terms) {
-        return new Polynomial(null, Arrays.asList(terms));
+    public static Expression of(Expression... terms) {
+        return polynomial(Arrays.asList(terms));
     }
 
     public Polynomial withParent(Expression parent) {
@@ -38,37 +35,15 @@ public final class Polynomial extends Expression {
     }
 
     private static Expression polynomial(List<Expression> terms) {
-        terms = terms.stream().filter(t->!t.equals(IntegerConstant.ZERO)).collect(Collectors.toList());
-        return terms.size() == 0 ? IntegerConstant.ZERO :
-                terms.size() == 1 ? terms.get(0) :
-                        new Polynomial(null, terms);
+        return combine(terms, l->new Polynomial(null, l), IntegerConstant.ZERO);
     }
 
+    @Override
     public Expression plus(Expression o) {
-        if (o.equals(IntegerConstant.ZERO)) {
-            return this;
-        }
-        List<Expression> oterms = o instanceof Polynomial ? ((Polynomial) o).terms : Collections.singletonList(o);
-        List<Expression> terms = new ArrayList<>(this.terms.size() + oterms.size());
-        terms.addAll(this.terms);
-        terms.addAll(oterms);
-        terms.sort(Comparator.naturalOrder());
-        Expression previous = IntegerConstant.ZERO;
-        List<Expression> result = new ArrayList<>(terms.size());
-        for (Expression e: terms) {
-            if (e.getNonCoefficients().equals(previous.getNonCoefficients())) {
-                result.add(e.plus(previous));
-                e = IntegerConstant.ZERO;
-            }
-            else if (! IntegerConstant.ZERO.equals(previous)) {
-                result.add(previous);
-            }
-            previous = e;
-        }
-        if (! IntegerConstant.ZERO.equals(previous)) {
-            result.add(previous);
-        }
-        return polynomial(result);
+        return this.applyOp(Expression::plus, o,
+                (e) -> e instanceof Polynomial ? ((Polynomial) e).terms : Collections.singletonList(e),
+                (e1, e2) -> e1.getNonCoefficients().equals(e2.getNonCoefficients()),
+                Polynomial::polynomial);
     }
 
     @Override

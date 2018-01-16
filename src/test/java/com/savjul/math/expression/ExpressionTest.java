@@ -12,7 +12,8 @@ public class ExpressionTest {
         Assert.assertEquals(ExpressionConstants.TERM_ORDER, e2.order());
         Expression e3 = Term.of(IntegerConstant.ONE);
         Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_OTHER, e3.order());
-        Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_TERM, ((Term)e3).getFactors().get(0).order());
+        Expression e4 = Term.of(IntegerConstant.MINUS_ONE, Variable.of("x"));
+        Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_TERM, ((Term)e4).getFactors().get(0).order());
     }
 
     @Test

@@ -1,9 +1,11 @@
 package com.savjul.math.expression;
 
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
+import java.util.*;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public abstract class Expression implements Comparable<Expression> {
     private final Expression parent;
@@ -41,13 +43,7 @@ public abstract class Expression implements Comparable<Expression> {
     }
 
     public Expression plus(Expression o) {
-        if (this.equals(IntegerConstant.ZERO)) {
-            return o;
-        }
-        else if (o.equals(IntegerConstant.ZERO)) {
-            return this;
-        }
-        else if (o instanceof Polynomial) {
+        if (o instanceof Polynomial) {
             return o.plus(this);
         }
         else if (this.getNonCoefficients().equals(o.getNonCoefficients())) {
@@ -58,16 +54,7 @@ public abstract class Expression implements Comparable<Expression> {
     }
 
     public Expression times(Expression o) {
-        if (this.equals(IntegerConstant.ZERO) || o.equals(IntegerConstant.ZERO)) {
-            return IntegerConstant.ZERO;
-        }
-        else if (this.equals(IntegerConstant.ONE)) {
-            return o;
-        }
-        else if (o.equals(IntegerConstant.ONE)) {
-            return this;
-        }
-        else if (o instanceof Term) {
+        if (o instanceof Term) {
             return o.times(this);
         }
         else if (this.getBase().equals(o.getBase())) {
@@ -98,24 +85,37 @@ public abstract class Expression implements Comparable<Expression> {
         return Integer.compare(this.order(), o.order());
     }
 
-    protected static int compare(List<? extends Expression> l1, List<? extends Expression> l2) {
-        Deque<Expression> q1 = new ArrayDeque<>(l1);
-        Deque<Expression> q2 = new ArrayDeque<>(l2);
-        while (! (q1.isEmpty() || q2.isEmpty())) {
-            Expression te = q1.pollFirst();
-            Expression oe = q2.pollFirst();
-            int result = te.compareTo(oe);
-            if (result != 0) {
-                return result;
+    // functions used by Term and Polynomial
+    static Expression combine(List<Expression> expressions, Function<List<Expression>, Expression> combiner, Expression identity) {
+        expressions = expressions.stream().filter(e->!e.equals(identity)).collect(Collectors.toList());
+        return expressions.size() == 0 ? identity : expressions.size() == 1 ? expressions.get(0) :  combiner.apply(expressions);
+    }
+
+    Expression applyOp(BiFunction<Expression, Expression, Expression> operand, Expression other,
+                       Function<Expression, List<Expression>> getContents,
+                       BiPredicate<Expression, Expression> combineIf,
+                       Function<List<Expression>, Expression> createExpression) {
+        List<Expression> items = new ArrayList<>(getContents.apply(this));
+        items.addAll(getContents.apply(other));
+        Collections.sort(items);
+        List<Expression> result = new ArrayList<>(items.size());
+        for (Expression e: items) {
+            if (! result.isEmpty() && combineIf.test(result.get(result.size()-1), e)) {
+                e = operand.apply(result.remove(result.size()-1), e);
+            }
+            result.add(e);
+        }
+        return createExpression.apply(result);
+    }
+
+    static int compare(List<? extends Expression> l1, List<? extends Expression> l2) {
+        int min = Math.min(l1.size(), l2.size());
+        for (int idx = 0; idx < min; idx++) {
+            int res = l1.get(idx).compareTo(l2.get(idx));
+            if (res != 0) {
+                return res;
             }
         }
-        if (q1.isEmpty() && q2.isEmpty()) {
-            return 0;
-        }
-        else if (q1.isEmpty()) {
-            return -1;
-        }
-        return 1;
-
+        return Integer.compare(l1.size(), l2.size());
     }
 }
