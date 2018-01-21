@@ -1,5 +1,6 @@
 package com.savjul.math.linear;
 
+import com.savjul.math.expression.Context;
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.IntegerConstant;
 
@@ -39,6 +40,7 @@ public final class Matrix2D {
     }
 
     public Matrix2D plus(Matrix2D o) {
+        check(o);
         Expression[][] matrix = new Expression[this.matrix.length][];
         for (int idx = 0; idx < matrix.length; idx++) {
             Expression[] row = new Expression[this.matrix[idx].length];
@@ -90,6 +92,62 @@ public final class Matrix2D {
             result[idx] = r;
         }
         return Vector.of(result);
+    }
+
+    public Matrix2D transpose() {
+        Expression[][] matrix = new Expression[this.matrix[0].length][];
+        for (int jdx = 0; jdx < matrix.length; jdx++) {
+            matrix[jdx] = new Expression[this.matrix.length];
+            for (int idx = 0; idx < matrix[jdx].length; idx++) {
+                matrix[jdx][idx] = this.matrix[idx][jdx];
+            }
+        }
+        return new Matrix2D(matrix);
+    }
+
+    public Matrix2D withContext(Context context) {
+        Expression[][] matrix = new Expression[this.matrix.length][];
+        for (int idx = 0; idx < matrix.length; idx++) {
+            Expression[] row = new Expression[this.matrix[0].length];
+            for (int jdx = 0; jdx < row.length; jdx++) {
+                row[jdx] = this.matrix[idx][jdx].withContext(context);
+            }
+            matrix[idx] = row;
+        }
+        return new Matrix2D(matrix);
+    }
+
+    public Matrix2D simplify() {
+        Expression[][] matrix = new Expression[this.matrix.length][];
+        for (int idx = 0; idx < matrix.length; idx++) {
+            Expression[] row = new Expression[this.matrix[0].length];
+            for (int jdx = 0; jdx < row.length; jdx++) {
+                row[jdx] = this.matrix[idx][jdx].simplify();
+            }
+            matrix[idx] = row;
+        }
+        return new Matrix2D(matrix);
+    }
+
+    public Expression trace() {
+        checkSquare();
+        Expression result = IntegerConstant.ZERO;
+        for (int idx = 0; idx < this.matrix.length; idx++) {
+            result = result.plus(this.matrix[idx][idx]);
+        }
+        return result;
+    }
+
+    private void check(Matrix2D o) {
+        if (this.matrix.length != o.matrix.length || this.matrix[0].length != o.matrix[0].length) {
+            throw new RuntimeException("Matrixes must be same size");
+        }
+    }
+
+    private void checkSquare() {
+        if (this.matrix.length != this.matrix[0].length) {
+            throw new RuntimeException("Square matrix required for this operation");
+        }
     }
 
     @Override
