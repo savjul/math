@@ -4,10 +4,9 @@ import com.savjul.math.expression.Context;
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.IntegerConstant;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Vector {
     public static final Vector ZERO3 = Vector.of(IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.ZERO);
@@ -15,81 +14,97 @@ public final class Vector {
     public static final Vector j = Vector.of(IntegerConstant.ZERO, IntegerConstant.ONE, IntegerConstant.ZERO);
     public static final Vector k = Vector.of(IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.ONE);
 
-    private final List<Expression> values;
+    private final Expression[] values;
 
-    private Vector(List<Expression> values) {
+    private Vector(Expression[] values) {
         this.values = values;
     }
 
+    Expression[] getValues() {
+        return values;
+    }
+
     public static Vector of(Expression... values) {
-        return new Vector(Arrays.asList(values));
+        return new Vector(Arrays.copyOf(values, values.length));
     }
 
     public Vector withContext(Context context) {
-        return new Vector(this.values.stream().map(e->e.withContext(context)).collect(Collectors.toList()));
+        Expression[] result = new Expression[this.values.length];
+        for (int idx = 0; idx < result.length; idx++) {
+            result[idx] = this.values[idx].withContext(context);
+        }
+        return new Vector(result);
     }
 
     public Vector simplify() {
-        return new Vector(this.values.stream().map(Expression::simplify).collect(Collectors.toList()));
+        Expression[] result = new Expression[this.values.length];
+        for (int idx = 0; idx < result.length; idx++) {
+            result[idx] = this.values[idx].simplify();
+        }
+        return new Vector(result);
     }
 
     public Vector plus(Vector o) {
         check(o);
-        List<Expression> result = new ArrayList<>();
-        for (int idx = 0; idx < this.size(); idx++) {
-            result.add(this.get(idx).plus(o.get(idx)));
+        Expression[] result = new Expression[this.values.length];
+        for (int idx = 0; idx < result.length; idx++) {
+            result[idx] = this.values[idx].plus(o.values[idx]);
         }
         return new Vector(result);
     }
 
     public Vector times(Expression scalar) {
-        return new Vector(this.values.stream().map(scalar::times).collect(Collectors.toList()));
+        Expression[] result = new Expression[this.values.length];
+        for (int idx = 0; idx < result.length; idx++) {
+            result[idx] = this.values[idx].times(scalar);
+        }
+        return new Vector(result);
     }
 
     public Expression dot(Vector o) {
         check(o);
         Expression result = IntegerConstant.ZERO;
-        for (int idx = 0; idx < this.size(); idx++) {
-            result = result.plus(this.get(idx).times(o.get(idx)));
+        for (int idx = 0; idx < this.values.length; idx++) {
+            result = result.plus(this.values[idx].times(o.values[idx]));
         }
         return result;
     }
 
     public Vector cross(Vector o) {
-        Expression i1 = this.get(1).times(o.get(2));
-        Expression i2 = this.get(2).times(o.get(1));
+        Expression i1 = this.values[1].times(o.values[2]);
+        Expression i2 = this.values[2].times(o.values[1]);
         Vector i3 = i.times(i1.plus(IntegerConstant.MINUS_ONE.times(i2)));
 
-        Expression j1 = this.get(2).times(o.get(0));
-        Expression j2 = this.get(0).times(o.get(2));
+        Expression j1 = this.values[2].times(o.values[0]);
+        Expression j2 = this.values[0].times(o.values[2]);
         Vector j3 = j.times(j1.plus(IntegerConstant.MINUS_ONE.times(j2)));
 
-        Expression k1 = this.get(0).times(o.get(1));
-        Expression k2 = this.get(1).times(o.get(0));
+        Expression k1 = this.values[0].times(o.values[1]);
+        Expression k2 = this.values[1].times(o.values[0]);
         Vector k3 = k.times(k1.plus(IntegerConstant.MINUS_ONE.times(k2)));
 
         return i3.plus(j3).plus(k3);
     }
 
     private int size() {
-        return this.values.size();
+        return this.values.length;
     }
 
     private Expression get(int idx) {
-        return this.values.get(idx);
+        return this.values[idx];
     }
 
     private void check(Vector o) {
-        if (this.size() != o.size()) {
+        if (this.values.length != o.values.length) {
             throw new RuntimeException("Vector size mismatch: "
-                    + this.size() + " vs " + o.size());
+                    + this.values.length + " vs " + o.values.length);
         }
     }
 
     @Override
     public String toString() {
         return "[" + String.join(", ",
-                this.values.stream().map(Expression::toString).collect(Collectors.toList())) + "]";
+                Stream.of(this.values).map(Expression::toString).collect(Collectors.toList())) + "]";
     }
 
     @Override
@@ -99,11 +114,11 @@ public final class Vector {
 
         Vector vector = (Vector) o;
 
-        return values.equals(vector.values);
+        return Arrays.equals(values, vector.values);
     }
 
     @Override
     public int hashCode() {
-        return values.hashCode();
+        return Arrays.hashCode(values);
     }
 }
