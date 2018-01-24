@@ -138,6 +138,58 @@ public final class Matrix2D {
         return result;
     }
 
+    public Expression det() {
+        checkSquare();
+        return this.determinant();
+    }
+
+    private Expression determinant() {
+        Expression result = IntegerConstant.ZERO;
+        int idx = 0;
+        for (int jdx = 0; jdx < this.matrix.length; jdx++) {
+            Expression a = this.matrix[idx][jdx];
+            Expression C = this.cofactor(idx, jdx);
+            result = result.plus(a.times(C));
+        }
+        return result;
+    }
+
+    private Expression cofactor(int i, int j) {
+        Expression cofactor = IntegerConstant.ZERO;
+
+        if (this.matrix.length == 2) {
+            if (i == 0 && j == 0) cofactor = this.matrix[1][1];
+            if (i == 0 && j == 1) cofactor = this.matrix[1][0].times(IntegerConstant.MINUS_ONE);
+            if (i == 1 && j == 0) cofactor = this.matrix[0][1].times(IntegerConstant.MINUS_ONE);
+            if (i == 1 && j == 1) cofactor = this.matrix[0][0];
+        }
+        else {
+            Expression sign = (i + j) % 2 == 0 ? IntegerConstant.ONE : IntegerConstant.MINUS_ONE;
+            return this.minor(i, j).times(sign);
+        }
+        return cofactor;
+    }
+
+    private Expression minor(int i, int j) {
+        int n = this.matrix.length;
+        Expression[][] matrix = new Expression[n-1][];
+        int midx=0;
+        for (int idx = 0; idx < n; idx++) {
+            if (idx != i) {
+                int mjdx = 0;
+                matrix[midx] = new Expression[n-1];
+                for (int jdx = 0; jdx < n; jdx++) {
+                    if (jdx != j) {
+                        matrix[midx][mjdx] = this.matrix[idx][jdx];
+                        mjdx++;
+                    }
+                }
+                midx++;
+            }
+        }
+        return new Matrix2D(matrix).det();
+    }
+
     private void check(Matrix2D o) {
         if (this.matrix.length != o.matrix.length || this.matrix[0].length != o.matrix[0].length) {
             throw new RuntimeException("Matrixes must be same size");

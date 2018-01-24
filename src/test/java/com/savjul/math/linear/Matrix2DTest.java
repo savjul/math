@@ -5,6 +5,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class Matrix2DTest {
+    public Expression[][] variables(String[][] names) {
+        Expression[][] variables = new Expression[names.length][];
+        for (int idx = 0; idx < names.length; idx++) {
+            Expression[] row = new Expression[names[idx].length];
+            for (int jdx = 0; jdx < row.length; jdx++) {
+                row[jdx] = Variable.of(names[idx][jdx]);
+            }
+            variables[idx] = row;
+        }
+        return variables;
+    }
+
     @Test
     public void testMatrix() {
         Matrix2D matrix2D = Matrix2D.of(new Expression[][] {
@@ -129,5 +141,47 @@ public class Matrix2DTest {
                 .add("c1", Variable.of("z1")).add("c2", Variable.of("z2")).add("c3", Variable.of("z3"))
                 .build();
         Assert.assertEquals(B, A.withContext(context));
+    }
+
+    @Test
+    public void testSimpleDeterminant() {
+        Matrix2D A = Matrix2D.of(new Expression[][] {
+                { IntegerConstant.of(3), IntegerConstant.of(-4), },
+                { IntegerConstant.of(2), IntegerConstant.of(6), },
+        });
+        Assert.assertEquals(IntegerConstant.of(26), A.det());
+    }
+
+    @Test
+    public void testDeterminant() {
+        Matrix2D A = Matrix2D.of(new Expression[][] {
+                { IntegerConstant.of(3), IntegerConstant.of(1), IntegerConstant.of(0)},
+                { IntegerConstant.of(-2), IntegerConstant.of(-4), IntegerConstant.of(3) },
+                { IntegerConstant.of(5), IntegerConstant.of(4), IntegerConstant.of(-2) },
+        });
+        Assert.assertEquals(IntegerConstant.of(-1), A.det());
+    }
+
+    @Test
+    public void testDeterminateWithVariables() {
+        Matrix2D A = Matrix2D.of(variables(new String[][] {
+                { "a11", "a12", "a13", },
+                { "a21", "a22", "a23", },
+                { "a31", "a32", "a33", },
+        }));
+        Expression result = IntegerConstant.ZERO.plus(
+                Variable.of("a11").times(Variable.of("a22")).times(Variable.of("a33"))
+        ).plus(
+                Variable.of("a12").times(Variable.of("a23")).times(Variable.of("a31"))
+        ).plus(
+                Variable.of("a13").times(Variable.of("a21")).times(Variable.of("a32"))
+        ).plus(
+                Variable.of("a13").times(Variable.of("a22")).times(Variable.of("a31")).times(IntegerConstant.MINUS_ONE)
+        ).plus(
+                Variable.of("a12").times(Variable.of("a21")).times(Variable.of("a33")).times(IntegerConstant.MINUS_ONE)
+        ).plus(
+                Variable.of("a11").times(Variable.of("a23")).times(Variable.of("a32")).times(IntegerConstant.MINUS_ONE)
+        );
+        Assert.assertEquals(result, A.det().simplify());
     }
 }
