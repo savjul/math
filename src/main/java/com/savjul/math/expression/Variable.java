@@ -11,7 +11,7 @@ public final class Variable extends Expression {
         this.name = name;
     }
 
-    public static Variable of(String name) {
+    public static Expression of(String name) {
         return new Variable(null, name);
     }
 

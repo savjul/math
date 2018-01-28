@@ -14,8 +14,27 @@ public final class Exponent extends Expression {
         this.power = power.withParent(this);
     }
 
-    public static Exponent of(Expression base, Expression exponent) {
-        return new Exponent(null, base, exponent);
+    public static Expression of(Expression base, Expression exponent) {
+        if (base.equals(IntegerConstant.ONE)) {
+            return IntegerConstant.ONE;
+        }
+        else if (base.equals(IntegerConstant.ZERO)) {
+            if (exponent.equals(IntegerConstant.ZERO)) {
+                throw new RuntimeException("Can't evaluate 0^0");
+            }
+            else {
+                return IntegerConstant.ZERO;
+            }
+        }
+        else if (exponent.equals(IntegerConstant.ONE)) {
+            return base;
+        }
+        else if (exponent.equals(IntegerConstant.ZERO)) {
+            return IntegerConstant.ONE;
+        }
+        else {
+            return new Exponent(null, base, exponent);
+        }
     }
 
     @Override

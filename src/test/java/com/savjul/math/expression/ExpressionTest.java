@@ -2,7 +2,6 @@ package com.savjul.math.expression;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.omg.PortableInterceptor.INACTIVE;
 
 public class ExpressionTest {
     @Test
@@ -100,6 +99,19 @@ public class ExpressionTest {
     }
 
     @Test
+    public void testPowerOfOne() {
+        Expression e = Variable.of("x").pow(IntegerConstant.ONE);
+        Assert.assertEquals(Variable.of("x"), e);
+        Assert.assertEquals("x", e.toString());
+    }
+
+    @Test
+    public void testBaseOfZero() {
+        Expression e = IntegerConstant.ZERO.pow(Variable.of("x"));
+        Assert.assertEquals(IntegerConstant.ZERO, e);
+    }
+
+    @Test
     public void testZeroCancel() {
         Expression e1 = Variable.of("x");
         Expression e2 = Variable.of("x").times(IntegerConstant.MINUS_ONE);
@@ -116,8 +128,8 @@ public class ExpressionTest {
 
     @Test
     public void testXtimesXpow2timesy() {
-        Variable x = Variable.of("x");
-        Variable y = Variable.of("y");
+        Expression x = Variable.of("x");
+        Expression y = Variable.of("y");
         Expression e1 = x.times(x).times(y);
         Expression res = x.times(e1);
         Assert.assertEquals("x^3y", res.toString());
@@ -125,8 +137,8 @@ public class ExpressionTest {
 
     @Test
     public void testytimesxtimeypow2() {
-        Variable x = Variable.of("x");
-        Variable y = Variable.of("y");
+        Expression x = Variable.of("x");
+        Expression y = Variable.of("y");
         Expression e1 = x.times(y).times(y);
         Expression res = y.times(e1);
         Assert.assertEquals("xy^3", res.toString());

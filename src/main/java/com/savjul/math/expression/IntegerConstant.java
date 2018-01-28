@@ -1,7 +1,5 @@
 package com.savjul.math.expression;
 
-import org.omg.PortableInterceptor.INACTIVE;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -10,7 +8,6 @@ public final class IntegerConstant extends Expression {
     public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
     public static final IntegerConstant ZERO = IntegerConstant.of(0);
     public static final IntegerConstant ONE = IntegerConstant.of(1);
-    public static final IntegerConstant TWO = IntegerConstant.of(2);
     private final Integer value;
 
     private IntegerConstant(Expression parent, Integer value) {
