@@ -31,6 +31,11 @@ public final class Variable extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return false;
+    }
+
+    @Override
     public int compareTo(Expression o) {
         if (o instanceof Variable) {
             return this.name.compareTo(((Variable) o).name);

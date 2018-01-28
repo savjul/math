@@ -47,6 +47,11 @@ public final class Term extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return this.factors.stream().allMatch(Expression::isConstant);
+    }
+
+    @Override
     public Expression simplify() {
         return this.factors.stream().map(Expression::simplify).reduce(IntegerConstant.ONE, Polynomial::multiply);
     }
@@ -57,17 +62,13 @@ public final class Term extends Expression {
 
     @Override
     public Expression getCoefficient() {
-        return this.factors.stream().filter(f->f instanceof IntegerConstant)
+        return this.factors.stream().filter(Expression::isConstant)
                 .reduce(IntegerConstant.ONE, Expression::times);
     }
 
     @Override
     public List<Expression> getNonCoefficients() {
-        return this.factors.stream().filter(f->! (f instanceof IntegerConstant)).collect(Collectors.toList());
-    }
-
-    private boolean isOne(Expression e) {
-        return IntegerConstant.ONE.equals(e);
+        return this.factors.stream().filter(f->! (f.isConstant())).collect(Collectors.toList());
     }
 
     @Override

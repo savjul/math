@@ -51,6 +51,11 @@ public final class Polynomial extends Expression {
         return super.times(o);
     }
 
+    @Override
+    public boolean isConstant() {
+        return this.terms.stream().allMatch(Expression::isConstant);
+    }
+
     public static Expression multiply(Expression e1, Expression e2) {
         if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
             return multiply((Polynomial) e1, (Polynomial) e2);
@@ -64,7 +69,7 @@ public final class Polynomial extends Expression {
         return e1.times(e2);
     }
 
-    public static Polynomial multiply(Expression e, Polynomial p) {
+    private static Polynomial multiply(Expression e, Polynomial p) {
         List<Expression> result = new ArrayList<>();
         for (Expression part: p.getTerms()) {
             result.add(e.times(part));

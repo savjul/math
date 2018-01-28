@@ -58,11 +58,24 @@ public abstract class Expression implements Comparable<Expression> {
         if (o instanceof Term) {
             return o.times(this);
         }
+        else if (o instanceof Rational) {
+            return o.times(this);
+        }
         else if (this.getBase().equals(o.getBase())) {
             return Exponent.of(this.getBase(), this.getPower().plus(o.getPower()));
         }
         return Term.of(this, o);
     }
+
+    public Expression divideBy(Expression o) {
+        return Rational.of(this, o);
+    }
+
+    public Expression invert() {
+        return Rational.of(IntegerConstant.ONE, this);
+    }
+
+    public abstract boolean isConstant();
 
     public Expression pow(Expression o) {
         return Exponent.of(this, o);

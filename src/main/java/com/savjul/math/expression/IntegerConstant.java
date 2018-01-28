@@ -1,5 +1,7 @@
 package com.savjul.math.expression;
 
+import org.omg.PortableInterceptor.INACTIVE;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +33,7 @@ public final class IntegerConstant extends Expression {
     }
 
     private IntegerConstant add(IntegerConstant o) {
-        return new IntegerConstant(null,this.value + o.value);
+        return IntegerConstant.of(this.value + o.value);
     }
 
     @Override
@@ -51,7 +53,7 @@ public final class IntegerConstant extends Expression {
     }
 
     private IntegerConstant times(IntegerConstant o) {
-        return new IntegerConstant(null,this.value * o.value);
+        return IntegerConstant.of(this.value * o.value);
     }
 
     @Override
@@ -73,9 +75,20 @@ public final class IntegerConstant extends Expression {
         }
     }
 
+    @Override
+    public boolean isConstant() {
+        return true;
+    }
+
     private Expression pow(IntegerConstant o) {
-        if (o.value > -1) {
-            return new IntegerConstant(null, pow(this.value, o.value));
+        if (o.value == 1) {
+            return this;
+        }
+        else if (o.value > -1) {
+            return IntegerConstant.of(pow(this.value, o.value));
+        }
+        else if (o.value < 0) {
+            return IntegerConstant.of(pow(this.value, -1 * o.value)).invert();
         }
         else {
             return super.pow(o);

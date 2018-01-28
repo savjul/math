@@ -29,6 +29,11 @@ public final class Exponent extends Expression {
     }
 
     @Override
+    public boolean isConstant() {
+        return this.base.isConstant() && this.power.isConstant();
+    }
+
+    @Override
     public Exponent withParent(Expression parent) {
         return new Exponent(parent, this.base, this.power);
     }

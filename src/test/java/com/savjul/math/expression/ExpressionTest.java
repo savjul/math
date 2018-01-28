@@ -2,6 +2,7 @@ package com.savjul.math.expression;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.omg.PortableInterceptor.INACTIVE;
 
 public class ExpressionTest {
     @Test
@@ -39,10 +40,10 @@ public class ExpressionTest {
     }
 
     @Test
-    public void testTermSimplification() {
+    public void testTermMultiplicationByVariable() {
         Expression x = Variable.of("x");
         Expression x2 = IntegerConstant.of(2).times(Variable.of("x"));
-        Expression res = x.times(x2).simplify();
+        Expression res = x.times(x2);
         Assert.assertEquals("2x^2", res.toString());
     }
 
@@ -52,6 +53,7 @@ public class ExpressionTest {
         Expression e2 = Variable.of("y").plus(IntegerConstant.of(3));
         Expression res = e1.times(e2);
         Assert.assertEquals("(x + 1)(y + 3)", res.toString());
+        Assert.assertEquals("3x + xy + y + 3", res.simplify().toString());
     }
 
     @Test
@@ -72,18 +74,20 @@ public class ExpressionTest {
     public void testPolynomialMultiplication() {
         Expression e1 = Variable.of("x").plus(IntegerConstant.ONE);
         Expression e2 = Variable.of("x").plus(IntegerConstant.of(3));
-        Expression res = Polynomial.multiply((Polynomial) e1, (Polynomial) e2);
-           Assert.assertEquals("x^2 + 3x + x + 3", res.toString());
-        Assert.assertEquals("x^2 + 4x + 3", res.simplify().toString());
+        Expression res = e1.times(e2);
+        Assert.assertEquals("(x + 1)(x + 3)", res.toString());
+        Assert.assertEquals("x^2 + 3x + x + 3", res.simplify().toString());
+        Assert.assertEquals("x^2 + 4x + 3", res.simplify().simplify().toString());
     }
 
     @Test
     public void testNegativeNumbers() {
         Expression e1 = Variable.of("x").plus(IntegerConstant.ONE);
         Expression e2 = Variable.of("x").plus(IntegerConstant.MINUS_ONE);
-        Expression res = Polynomial.multiply((Polynomial) e1, (Polynomial) e2);
-        Assert.assertEquals("x^2 + -1x + x + -1", res.toString());
-        Assert.assertEquals("x^2 + -1", res.simplify().toString());
+        Expression res = e1.times(e2);
+        Assert.assertEquals("(x + -1)(x + 1)", res.toString());
+        Assert.assertEquals("x^2 + x + -1x + -1", res.simplify().toString());
+        Assert.assertEquals("x^2 + -1", res.simplify().simplify().toString());
     }
 
     @Test
@@ -155,5 +159,72 @@ public class ExpressionTest {
         Assert.assertEquals("(x^y)(x + y + 3)", res.toString());
         Assert.assertEquals("3^5(3 + 3 + 5)", res.withContext(c).toString());
         Assert.assertEquals("2673", res.withContext(c).simplify().toString());
+    }
+
+    @Test
+    public void testIntegerDivision() {
+        Expression e1 = IntegerConstant.of(4).divideBy(IntegerConstant.of(9));
+        Assert.assertEquals("4/9", e1.toString());
+    }
+
+    @Test
+    public void testIntegerMultiplicationByRational() {
+        Expression e1 = IntegerConstant.of(4).divideBy(IntegerConstant.of(9));
+        Expression e2 = IntegerConstant.of(2);
+        Expression result = e2.times(e1);
+        Assert.assertEquals("8/9", result.toString());
+    }
+
+    @Test
+    public void testRationalMultiplicationByRational() {
+        Expression e1 = IntegerConstant.of(4).divideBy(IntegerConstant.of(9));
+        Expression e2 = IntegerConstant.of(3).divideBy(IntegerConstant.of(7));
+        Expression result = e1.times(e2);
+        Assert.assertEquals("12/63", result.toString());
+    }
+
+    @Test
+    public void testRationalDivisionByRational() {
+        Expression e1 = IntegerConstant.of(1).divideBy(IntegerConstant.of(2));
+        Expression e2 = IntegerConstant.of(1).divideBy(IntegerConstant.of(7));
+        Expression result = e1.divideBy(e2);
+        Assert.assertEquals("7/2", result.toString());
+    }
+
+    @Test
+    public void testDivisionByOne() {
+        Expression e1 = Variable.of("x").divideBy(IntegerConstant.ONE);
+        Assert.assertEquals(Variable.of("x"), e1);
+    }
+
+    @Test
+    public void testVariableDivideBy() {
+        Expression e1 = IntegerConstant.ONE.plus(Variable.of("x")).divideBy(Variable.of("x"));
+        Assert.assertEquals("(x + 1)/x", e1.toString());
+    }
+
+    @Test
+    public void testInversion() {
+        Expression e1 = Variable.of("x").invert();
+        Assert.assertEquals("1/x", e1.toString());
+        Assert.assertEquals("x", e1.invert().toString());
+    }
+
+    @Test(expected = Exception.class)
+    public void testDivisionByZero() {
+        IntegerConstant.ONE.divideBy(IntegerConstant.ZERO);
+    }
+
+    @Test(expected = Exception.class)
+    public void testEvaluationToDivisionByZero() {
+        Expression e1 = IntegerConstant.ONE.divideBy(Variable.of("x"));
+        Context context = ContextBuilder.get().add("x", 0).build();
+        e1.withContext(context);
+    }
+
+    @Test
+    public void testIntegerToNegativePower() {
+        Expression e1 = IntegerConstant.of(5).pow(IntegerConstant.of(-2));
+        Assert.assertEquals(e1, IntegerConstant.of(1).divideBy(IntegerConstant.of(25)));
     }
 }
