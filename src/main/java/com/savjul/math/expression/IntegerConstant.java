@@ -8,19 +8,23 @@ public final class IntegerConstant extends Expression {
     public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
     public static final IntegerConstant ZERO = IntegerConstant.of(0);
     public static final IntegerConstant ONE = IntegerConstant.of(1);
-    private final Integer value;
+    private final Long value;
 
-    private IntegerConstant(Expression parent, Integer value) {
+    private IntegerConstant(Expression parent, Long value) {
         super(parent);
         Objects.requireNonNull(value);
         this.value = value;
     }
 
-    public static IntegerConstant of(Integer value) {
+    public static IntegerConstant of(Long value) {
         return new IntegerConstant(null, value);
     }
 
-    public Integer getValue() {
+    public static IntegerConstant of(Integer value) {
+        return new IntegerConstant(null, value.longValue());
+    }
+
+    public Long getValue() {
         return value;
     }
 
@@ -78,7 +82,10 @@ public final class IntegerConstant extends Expression {
     }
 
     private Expression pow(IntegerConstant o) {
-        if (o.value == 1) {
+        if (o.value == 0) {
+            return IntegerConstant.ONE;
+        }
+        else if (o.value == 1) {
             return this;
         }
         else if (o.value > -1) {
@@ -92,9 +99,9 @@ public final class IntegerConstant extends Expression {
         }
     }
 
-    private int pow(int base, int power) {
-        int res = 1;
-        for (int idx = 0; idx < power; idx++) {
+    private long pow(long base, long power) {
+        long res = 1;
+        for (long idx = 0; idx < power; idx++) {
             res *= base;
         }
         return res;
@@ -129,15 +136,13 @@ public final class IntegerConstant extends Expression {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        IntegerConstant integerConstant = (IntegerConstant) o;
-
-        return value.equals(integerConstant.value);
+        IntegerConstant that = (IntegerConstant) o;
+        return Objects.equals(value, that.value);
     }
 
     @Override
     public int hashCode() {
-        return value.hashCode();
+        return Objects.hash(value);
     }
 
     @Override
