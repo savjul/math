@@ -2,48 +2,36 @@ package com.savjul.math.expression;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Term extends AbstractBaseExpression {
     private final List<Expression> factors;
 
-    private Term(Expression parent, List<Expression> factors) {
+    private Term(Expression parent, Stream<Expression> factors) {
         super(parent);
-        this.factors = new ArrayList<>();
-        for (Expression factor: factors) {
-            if (factor instanceof Term) {
-                this.factors.addAll(((Term) factor).getFactors().stream().map(f->f.withParent(this)).collect(Collectors.toList()));
-            }
-            else {
-                this.factors.add(factor.withParent(this));
-            }
-        }
-        this.factors.sort(Comparator.naturalOrder());
+        this.factors = factors.map(f->f.withParent(this)).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
     public static Expression of(Expression... factors) {
-        return term(Arrays.asList(factors));
+        return of(Stream.of(factors));
+    }
+
+    public static Expression of(Stream<Expression> factors) {
+        return new Term(null, factors);
+    }
+
+    public static Expression of(Collection<Expression> factors) {
+        return new Term(null, factors.stream());
     }
 
     @Override
     public Term withParent(Expression parent) {
-        return new Term(parent, this.factors);
+        return new Term(parent, this.factors.stream());
     }
 
     @Override
     public Expression withContext(Context context) {
-        return new Term(null, this.factors.stream().map(f->f.withContext(context)).collect(Collectors.toList()));
-    }
-
-    private static Expression term(List<Expression> factors) {
-        return combine(factors, l->new Term(null, l), IntegerConstant.ONE);
-    }
-
-    @Override
-    public Expression times(Expression o) {
-        return this.applyOp(Expression::times, o,
-                (e) -> e instanceof Term ? ((Term) e).factors : Collections.singletonList(e),
-                (e1, e2) -> e1.getBase().equals(e2.getBase()),
-                Term::term);
+        return new Term(null, this.factors.stream().map(f->f.withContext(context)));
     }
 
     @Override
@@ -51,46 +39,59 @@ public final class Term extends AbstractBaseExpression {
         return this.factors.stream().allMatch(Expression::isConstant);
     }
 
-    @Override
-    public Expression simplify() {
-        return this.factors.stream().map(Expression::simplify).reduce(IntegerConstant.ONE, Polynomial::multiply);
-    }
-
     public List<Expression> getFactors() {
         return this.factors;
     }
 
-    @Override
-    public Expression getCoefficient() {
-        return this.factors.stream().filter(Expression::isConstant)
-                .reduce(IntegerConstant.ONE, Expression::times);
+    private static List<Expression> getConstantPortion(Expression e) {
+        if (e instanceof Term) {
+            return ((Term) e).factors.stream().filter(Expression::isConstant).collect(Collectors.toList());
+        }
+        else {
+            if (e.isConstant()) {
+                return Collections.singletonList(e);
+            }
+            else {
+                return Collections.emptyList();
+            }
+        }
     }
 
-    @Override
-    public List<Expression> getNonCoefficients() {
-        return this.factors.stream().filter(f->! (f.isConstant())).collect(Collectors.toList());
+    private static List<Expression> getNonConstantPortion(Expression e) {
+        if (e instanceof Term) {
+            return ((Term) e).factors.stream().filter(f->! (f.isConstant())).collect(Collectors.toList());
+        }
+        else {
+            if (!e.isConstant()) {
+                return Collections.singletonList(e);
+            }
+            else {
+                return Collections.emptyList();
+            }
+        }
     }
 
     @Override
     public int order() {
-        return this.getNonCoefficients().stream().map(Expression::order)
+        return getNonConstantPortion(this).stream().map(Expression::order)
                 .max(Comparator.naturalOrder()).orElse(ExpressionConstants.INTEGER_ORDER_OTHER);
     }
 
     @Override
     public int compareTo(Expression o) {
-        if (o instanceof Term) {
-            int result = compare(this.getNonCoefficients(), o.getNonCoefficients());
+        List<Expression> otherNonContantPortion = getNonConstantPortion(o);
+        if (!otherNonContantPortion.isEmpty()) {
+            int result = compare(getNonConstantPortion(this), otherNonContantPortion);
             if (result == 0) {
-                Expression thisCo = this.getCoefficient();
-                Expression otherCo = o.getCoefficient();
-                return thisCo.compareTo(otherCo);
+                return compare(getConstantPortion(this), getConstantPortion(o));
             }
             else {
                 return result;
             }
         }
-        return super.compareTo(o);
+        else {
+            return super.compareTo(o);
+        }
     }
 
 

@@ -37,12 +37,10 @@ public final class Exponent extends AbstractBaseExpression {
         }
     }
 
-    @Override
     public Expression getBase() {
         return base;
     }
 
-    @Override
     public Expression getPower() {
         return power;
     }
@@ -60,11 +58,6 @@ public final class Exponent extends AbstractBaseExpression {
     @Override
     public Expression withContext(Context context) {
         return new Exponent(null, this.base.withContext(context), this.power.withContext(context));
-    }
-
-    @Override
-    public Expression simplify() {
-        return this.base.simplify().pow(this.power.simplify());
     }
 
     @Override

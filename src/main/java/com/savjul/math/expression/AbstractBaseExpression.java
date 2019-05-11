@@ -26,48 +26,12 @@ public abstract class AbstractBaseExpression implements Expression {
     }
 
     @Override
-    public Expression getCoefficient() {
-        return IntegerConstant.ONE;
-    }
-
-    @Override
-    public List<Expression> getNonCoefficients() {
-        return Collections.singletonList(this);
-    }
-
-    @Override
-    public Expression getBase() {
-        return this;
-    }
-
-    @Override
-    public Expression getPower() {
-        return IntegerConstant.ONE;
-    }
-
-    @Override
     public Expression plus(Expression o) {
-        if (o instanceof Polynomial) {
-            return o.plus(this);
-        }
-        else if (this.getNonCoefficients().equals(o.getNonCoefficients())) {
-            Expression c = this.getCoefficient().plus(o.getCoefficient());
-            return this.getNonCoefficients().stream().reduce(c, Expression::times);
-        }
         return Polynomial.of(this, o);
     }
 
     @Override
     public Expression times(Expression o) {
-        if (o instanceof Term) {
-            return o.times(this);
-        }
-        else if (o instanceof Rational) {
-            return o.times(this);
-        }
-        else if (this.getBase().equals(o.getBase())) {
-            return Exponent.of(this.getBase(), this.getPower().plus(o.getPower()));
-        }
         return Term.of(this, o);
     }
 
@@ -88,7 +52,7 @@ public abstract class AbstractBaseExpression implements Expression {
 
     @Override
     public Expression simplify() {
-        return this;
+        return BasicSimplifier.instance().simplify(this);
     }
 
     @Override
@@ -104,29 +68,6 @@ public abstract class AbstractBaseExpression implements Expression {
     @Override
     public int compareTo(Expression o) {
         return Integer.compare(this.order(), o.order());
-    }
-
-    // functions used by Term and Polynomial
-    static Expression combine(List<Expression> expressions, Function<List<Expression>, Expression> combiner, Expression identity) {
-        expressions = expressions.stream().filter(e->!e.equals(identity)).collect(Collectors.toList());
-        return expressions.size() == 0 ? identity : expressions.size() == 1 ? expressions.get(0) :  combiner.apply(expressions);
-    }
-
-    Expression applyOp(BiFunction<Expression, Expression, Expression> operand, Expression other,
-                       Function<Expression, List<Expression>> getContents,
-                       BiPredicate<Expression, Expression> combineIf,
-                       Function<List<Expression>, Expression> createExpression) {
-        List<Expression> items = new ArrayList<>(getContents.apply(this));
-        items.addAll(getContents.apply(other));
-        Collections.sort(items);
-        List<Expression> result = new ArrayList<>(items.size());
-        for (Expression e: items) {
-            if (! result.isEmpty() && combineIf.test(result.get(result.size()-1), e)) {
-                e = operand.apply(result.remove(result.size()-1), e);
-            }
-            result.add(e);
-        }
-        return createExpression.apply(result);
     }
 
     static int compare(List<? extends Expression> l1, List<? extends Expression> l2) {

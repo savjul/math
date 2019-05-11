@@ -2,48 +2,36 @@ package com.savjul.math.expression;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class Polynomial extends AbstractBaseExpression {
     private final List<Expression> terms;
 
-    private Polynomial(Expression parent, List<? extends Expression> terms) {
+    private Polynomial(Expression parent, Stream<Expression> terms) {
         super(parent);
-        this.terms = new ArrayList<>();
-        for (Expression term: terms) {
-            if (term instanceof Polynomial) {
-                this.terms.addAll(((Polynomial) term).getTerms().stream().map(t->t.withParent(this)).collect(Collectors.toList()));
-            }
-            else {
-                this.terms.add(term.withParent(this));
-            }
-        }
-        this.terms.sort(Comparator.naturalOrder());
+        this.terms = terms.map(t->t.withParent(this)).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
     }
 
-    public static Expression of(Expression... terms) {
-        return polynomial(Arrays.asList(terms));
+    public static Polynomial of(Expression... terms) {
+        return of(Stream.of(terms));
+    }
+
+    public static Polynomial of(Collection<Expression> terms) {
+        return new Polynomial(null, terms.stream());
+    }
+
+    public static Polynomial of(Stream<Expression> terms) {
+        return new Polynomial(null, terms);
     }
 
     public Polynomial withParent(Expression parent) {
-        return new Polynomial(parent, this.terms);
+        return new Polynomial(parent, this.terms.stream());
     }
 
     @Override
     public Expression withContext(Context context) {
         return new Polynomial(null,
-                this.terms.stream().map(e->e.withContext(context)).collect(Collectors.toList()));
-    }
-
-    private static Expression polynomial(List<Expression> terms) {
-        return combine(terms, l->new Polynomial(null, l), IntegerConstant.ZERO);
-    }
-
-    @Override
-    public Expression plus(Expression o) {
-        return this.applyOp(Expression::plus, o,
-                (e) -> e instanceof Polynomial ? ((Polynomial) e).terms : Collections.singletonList(e),
-                (e1, e2) -> e1.getNonCoefficients().equals(e2.getNonCoefficients()),
-                Polynomial::polynomial);
+                this.terms.stream().map(e->e.withContext(context)));
     }
 
     @Override
@@ -56,39 +44,6 @@ public final class Polynomial extends AbstractBaseExpression {
         return this.terms.stream().allMatch(Expression::isConstant);
     }
 
-    public static Expression multiply(Expression e1, Expression e2) {
-        if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
-            return multiply((Polynomial) e1, (Polynomial) e2);
-        }
-        else if (e1 instanceof Polynomial) {
-            return multiply(e2, (Polynomial) e1);
-        }
-        else if (e2 instanceof Polynomial) {
-            return multiply(e1, (Polynomial) e2);
-        }
-        return e1.times(e2);
-    }
-
-    private static Polynomial multiply(Expression e, Polynomial p) {
-        List<Expression> result = new ArrayList<>();
-        for (Expression part: p.getTerms()) {
-            result.add(e.times(part));
-        }
-        return new Polynomial(null, result);
-    }
-
-    public static Polynomial multiply(Polynomial p1, Polynomial p2) {
-        List<Expression> result = new ArrayList<>();
-        for (Expression part: p1.getTerms()) {
-            result.add(multiply(part, p2));
-        }
-        return new Polynomial(null, result);
-    }
-
-    @Override
-    public Expression simplify() {
-        return this.terms.stream().map(Expression::simplify).reduce(IntegerConstant.ZERO, Expression::plus);
-    }
 
     @Override
     public int order() {

@@ -18,15 +18,7 @@ public final class Rational extends AbstractBaseExpression {
     }
 
     public static Expression of(Expression numerator, Expression denominator) {
-        if (numerator.equals(IntegerConstant.ZERO)) {
-            return IntegerConstant.ZERO;
-        }
-        else if (denominator.equals(IntegerConstant.ONE)) {
-            return numerator;
-        }
-        else {
-            return new Rational(null, numerator, denominator);
-        }
+        return new Rational(null, numerator, denominator);
     }
 
 
@@ -46,37 +38,16 @@ public final class Rational extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression times(Expression o) {
-        if (o instanceof Rational) {
-            Rational other = (Rational) o;
-            return Rational.of(this.numerator.times(other.numerator), this.denominator.times(other.denominator));
-        }
-        else {
-            return Rational.of(o.times(this.numerator), this.denominator);
-        }
-    }
-
-    @Override
-    public Expression divideBy(Expression o) {
-        if (o instanceof Rational) {
-            Rational other = (Rational) o;
-            return Rational.of(this.numerator.times(other.denominator), this.denominator.times(other.numerator));
-        }
-        else {
-            return super.divideBy(o);
-        }
-    }
-
-    @Override
     public Expression withContext(Context context) {
         return Rational.of(this.numerator.withContext(context), this.denominator.withContext(context));
     }
 
-    @Override
-    public Expression simplify() {
-        Expression numerator = this.numerator.simplify();
-        Expression denominator = this.denominator.simplify();
-        return Rational.of(numerator, denominator);
+    public Expression getNumerator() {
+        return numerator;
+    }
+
+    public Expression getDenominator() {
+        return denominator;
     }
 
     @Override

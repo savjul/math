@@ -25,78 +25,13 @@ public final class DoubleConstant extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression plus(Expression o) {
-        if (o instanceof DoubleConstant) {
-            if (this.equals(ZERO)) return o;
-            if (o.equals(ZERO)) return this;
-            return new DoubleConstant(null, value + ((DoubleConstant) o).value);
-        }
-        else if (o instanceof IntegerConstant) {
-            IntegerConstant oi = (IntegerConstant) o;
-            if (oi.equals(IntegerConstant.ZERO)) return this;
-            return new DoubleConstant(null, value + oi.getValue());
-        }
-        return super.plus(o);
-    }
-
-    @Override
-    public Expression times(Expression o) {
-        if (o instanceof DoubleConstant) {
-            return new DoubleConstant(null, value * ((DoubleConstant) o).value);
-        }
-        else if (o instanceof IntegerConstant) {
-            IntegerConstant oi = (IntegerConstant) o;
-            if (oi.equals(IntegerConstant.ONE)) return this;
-            return new DoubleConstant(null, value + oi.getValue());
-        }
-        return super.times(o);
-    }
-
-    @Override
     public boolean isConstant() {
         return true;
     }
 
-    @Override
-    public Expression pow(Expression o) {
-        if (o instanceof DoubleConstant) {
-            return pow((DoubleConstant) o);
-        }
-        else if (o instanceof IntegerConstant) {
-            return pow((IntegerConstant) o);
-        }
-        else {
-            return super.pow(o);
-        }
-    }
 
-    private Expression pow(DoubleConstant o) {
-        if (o.equals(DoubleConstant.ZERO)) {
-            return DoubleConstant.ONE;
-        } else if (o.equals(DoubleConstant.ONE)) {
-            return this;
-        }
-        return new DoubleConstant(null, Math.pow(value, o.value));
-    }
-
-    private Expression pow(IntegerConstant o) {
-        if (o.equals(IntegerConstant.ZERO)) {
-            return DoubleConstant.ONE;
-        } else if (o.equals(IntegerConstant.ONE)) {
-            return this;
-        } else {
-            return new DoubleConstant(null, Math.pow(value, o.getValue()));
-        }
-    }
-
-    @Override
-    public Expression getCoefficient() {
-        return this;
-    }
-
-    @Override
-    public List<Expression> getNonCoefficients() {
-        return Collections.emptyList();
+    public Double getValue() {
+        return value;
     }
 
     @Override

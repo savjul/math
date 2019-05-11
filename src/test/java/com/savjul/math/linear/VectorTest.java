@@ -17,21 +17,21 @@ public class VectorTest {
     @Test
     public void testMultiplicationByScalar() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
-        Vector res = v1.times(Variable.of("x")).times(IntegerConstant.of(4));
+        Vector res = v1.times(Variable.of("x")).times(IntegerConstant.of(4)).simplify();
         Assert.assertEquals("[4x^2, 4xy, 4xz]", res.toString());
     }
 
     @Test
     public void testDotProduct() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
-        Expression res = v1.dot(v1);
+        Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("x^2 + y^2 + z^2", res.toString());
     }
 
     @Test
     public void testDotProductWithIntegerConstants() {
         Vector v1 = Vector.of(IntegerConstant.of(3), IntegerConstant.of(2), IntegerConstant.of(1));
-        Expression res = v1.dot(v1);
+        Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("14", res.toString());
     }
 
@@ -57,9 +57,9 @@ public class VectorTest {
         Vector jxk = Vector.j.cross(Vector.k);
         Vector kxi = Vector.k.cross(Vector.i);
 
-        Assert.assertEquals(Vector.k, ixj);
-        Assert.assertEquals(Vector.i, jxk);
-        Assert.assertEquals(Vector.j, kxi);
+        Assert.assertEquals(Vector.k, ixj.simplify());
+        Assert.assertEquals(Vector.i, jxk.simplify());
+        Assert.assertEquals(Vector.j, kxi.simplify());
     }
 
     @Test
@@ -68,9 +68,9 @@ public class VectorTest {
         Vector kxj = Vector.k.cross(Vector.j);
         Vector ixk = Vector.i.cross(Vector.k);
 
-        Assert.assertEquals(Vector.k.times(IntegerConstant.MINUS_ONE), jxi);
-        Assert.assertEquals(Vector.i.times(IntegerConstant.MINUS_ONE), kxj);
-        Assert.assertEquals(Vector.j.times(IntegerConstant.MINUS_ONE), ixk);
+        Assert.assertEquals(Vector.k.times(IntegerConstant.MINUS_ONE).simplify(), jxi.simplify());
+        Assert.assertEquals(Vector.i.times(IntegerConstant.MINUS_ONE).simplify(), kxj.simplify());
+        Assert.assertEquals(Vector.j.times(IntegerConstant.MINUS_ONE).simplify(), ixk.simplify());
     }
 
     @Test
@@ -80,16 +80,19 @@ public class VectorTest {
         Vector b = Vector.of(Variable.of("b1"), Variable.of("b2"), Variable.of("b3"));
         Vector c = Vector.of(Variable.of("c1"), Variable.of("c2"), Variable.of("c3"));
         Vector lhs = a.cross(b).cross(c);
-        lhs = lhs.simplify();
+        lhs = lhs.simplify().simplify();
         Vector rhs = b.times(a.dot(c)).plus(a.times(b.dot(c)).times(IntegerConstant.MINUS_ONE));
-        rhs = rhs.simplify();
+        rhs = rhs.simplify().simplify();
+        Assert.assertEquals(lhs.getValues()[0].simplify(), rhs.getValues()[0].simplify());
+        Assert.assertEquals(lhs.getValues()[1].simplify(), rhs.getValues()[1].simplify());
+        Assert.assertEquals(lhs.getValues()[2].simplify(), rhs.getValues()[2].simplify());
         Assert.assertEquals(lhs, rhs);
     }
 
     @Test
     public void testDotProductWithContext() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
-        Expression res = v1.dot(v1);
+        Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("x^2 + y^2 + z^2", res.toString());
         Context context = ContextBuilder.get()
                 .add("x", 1)

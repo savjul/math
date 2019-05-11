@@ -46,7 +46,7 @@ public class Matrix2DTest {
         });
 
         Matrix2D res = I3.plus(matrix2D2);
-        Assert.assertEquals(matrix2Dres, res);
+        Assert.assertEquals(matrix2Dres.simplify(), res.simplify());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class Matrix2DTest {
                 {IntegerConstant.ZERO, IntegerConstant.MINUS_ONE, IntegerConstant.ZERO },
                 {IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.MINUS_ONE },
         });
-        Matrix2D result = I3.times(IntegerConstant.MINUS_ONE);
+        Matrix2D result = I3.times(IntegerConstant.MINUS_ONE).simplify();
         Assert.assertEquals(expectedResult, result);
     }
 
@@ -78,7 +78,7 @@ public class Matrix2DTest {
                 {IntegerConstant.of(12), IntegerConstant.of(27), IntegerConstant.of(30), IntegerConstant.of(13) },
                 {IntegerConstant.of(8), IntegerConstant.of(-4), IntegerConstant.of(26), IntegerConstant.of(12) },
         });
-        Matrix2D result = A.times(B);
+        Matrix2D result = A.times(B).simplify();
         Assert.assertEquals(AB, result);
     }
 
@@ -103,7 +103,9 @@ public class Matrix2DTest {
 
         Vector vector = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
 
-        Assert.assertEquals(vector, I3.times(vector));
+        Vector timesI3 = I3.times(vector);
+        timesI3 = timesI3.simplify();
+        Assert.assertEquals(vector, timesI3);
     }
 
     @Test
@@ -120,7 +122,7 @@ public class Matrix2DTest {
                 { Variable.of("b3.1"), Variable.of("b3.2"), Variable.of("b3.3"), Variable.of("b3.4"), },
                 { Variable.of("b4.1"), Variable.of("b4.2"), Variable.of("b4.3"), Variable.of("b4.4"), },
         });
-        Assert.assertEquals(A.plus(B).trace(), A.trace().plus(B.trace()));
+        Assert.assertEquals(A.plus(B).trace().simplify(), A.trace().plus(B.trace()).simplify());
     }
 
     @Test
@@ -149,7 +151,7 @@ public class Matrix2DTest {
                 { IntegerConstant.of(3), IntegerConstant.of(-4), },
                 { IntegerConstant.of(2), IntegerConstant.of(6), },
         });
-        Assert.assertEquals(IntegerConstant.of(26), A.det());
+        Assert.assertEquals(IntegerConstant.of(26), A.det().simplify());
     }
 
     @Test
@@ -159,7 +161,7 @@ public class Matrix2DTest {
                 { IntegerConstant.of(-2), IntegerConstant.of(-4), IntegerConstant.of(3) },
                 { IntegerConstant.of(5), IntegerConstant.of(4), IntegerConstant.of(-2) },
         });
-        Assert.assertEquals(IntegerConstant.of(-1), A.det());
+        Assert.assertEquals(IntegerConstant.of(-1), A.det().simplify());
     }
 
     @Test
@@ -181,7 +183,7 @@ public class Matrix2DTest {
                 Variable.of("a12").times(Variable.of("a21")).times(Variable.of("a33")).times(IntegerConstant.MINUS_ONE)
         ).plus(
                 Variable.of("a11").times(Variable.of("a23")).times(Variable.of("a32")).times(IntegerConstant.MINUS_ONE)
-        );
+        ).simplify();
         Assert.assertEquals(result, A.det().simplify());
     }
 }
