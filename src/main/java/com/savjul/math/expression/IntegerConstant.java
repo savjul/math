@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class IntegerConstant extends Expression {
+public final class IntegerConstant extends AbstractBaseExpression {
     public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
     public static final IntegerConstant ZERO = IntegerConstant.of(0);
     public static final IntegerConstant ONE = IntegerConstant.of(1);

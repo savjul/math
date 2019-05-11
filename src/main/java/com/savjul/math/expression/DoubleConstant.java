@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class DoubleConstant extends Expression {
+public final class DoubleConstant extends AbstractBaseExpression {
     public static final DoubleConstant ZERO = new DoubleConstant(null, 0.0);
     public static final DoubleConstant ONE = new DoubleConstant(null, 1.0);
 

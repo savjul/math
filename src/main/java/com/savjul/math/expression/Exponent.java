@@ -2,7 +2,7 @@ package com.savjul.math.expression;
 
 import java.util.Objects;
 
-public final class Exponent extends Expression {
+public final class Exponent extends AbstractBaseExpression {
     private final Expression base;
     private final Expression power;
 

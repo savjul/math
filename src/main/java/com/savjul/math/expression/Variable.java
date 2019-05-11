@@ -2,7 +2,7 @@ package com.savjul.math.expression;
 
 import java.util.Objects;
 
-public final class Variable extends Expression {
+public final class Variable extends AbstractBaseExpression {
     private final String name;
 
     private Variable(Expression parent, String name) {

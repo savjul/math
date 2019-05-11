@@ -2,7 +2,7 @@ package com.savjul.math.expression;
 
 import java.util.Objects;
 
-public final class Rational extends Expression {
+public final class Rational extends AbstractBaseExpression {
     private final Expression numerator;
     private final Expression denominator;
 

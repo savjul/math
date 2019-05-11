@@ -3,7 +3,7 @@ package com.savjul.math.expression;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class Term extends Expression {
+public final class Term extends AbstractBaseExpression {
     private final List<Expression> factors;
 
     private Term(Expression parent, List<Expression> factors) {

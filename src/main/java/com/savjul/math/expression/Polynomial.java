@@ -3,7 +3,7 @@ package com.savjul.math.expression;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class Polynomial extends Expression {
+public final class Polynomial extends AbstractBaseExpression {
     private final List<Expression> terms;
 
     private Polynomial(Expression parent, List<? extends Expression> terms) {
