@@ -3,6 +3,7 @@ package com.savjul.math.transformers;
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.NumericConstant;
 import com.savjul.math.expression.simple.Variable;
 
@@ -11,15 +12,55 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class BasicComparison {
+    private static final Comparator<Expression> SIMPLIFYING_TERM_COMPARATOR = new SimplifyingTermComparator();
     private static final Comparator<Expression> FACTOR_COMPARATOR = new DisplayComparator(true);
     private static final Comparator<Expression> TERM_COMPARATOR = new DisplayComparator(false);
 
-    public static Comparator<Expression> factors() {
-        return FACTOR_COMPARATOR;
-    }
+    public static Comparator<Expression> factors() { return FACTOR_COMPARATOR; }
 
     public static Comparator<Expression> terms() {
         return TERM_COMPARATOR;
+    }
+
+    public static Comparator<Expression> termSimplify() { return SIMPLIFYING_TERM_COMPARATOR; }
+
+    public static Expression getConstantCoefficient(Expression expression) {
+        if (expression instanceof Term) {
+            List<Expression> factors = ((Term) expression).getFactors(true);
+            return factors.size() == 1 ? factors.get(0) : Term.of(factors.stream().sorted(BasicComparison.factors()));
+        } else if (expression.isConstant()) {
+            return expression;
+        } else {
+            return IntegerConstant.ONE;
+        }
+    }
+
+    public static List<Expression> getNonConstants(Expression expression) {
+        if (expression instanceof Term) {
+            return ((Term)expression).getFactors(false);
+        } else if (expression.isConstant()) {
+            return Collections.emptyList();
+        } else {
+            return Collections.singletonList(expression);
+        }
+    }
+
+    public static Expression getBase(Expression expression) {
+        if (expression instanceof Exponent) {
+            return ((Exponent) expression).getBase();
+        }
+        else {
+            return expression;
+        }
+    }
+
+    public static Expression getPower(Expression expression) {
+        if (expression instanceof Exponent) {
+            return ((Exponent) expression).getPower();
+        }
+        else {
+            return IntegerConstant.ONE;
+        }
     }
 
     private static final class DisplayComparator implements Comparator<Expression> {
@@ -71,6 +112,39 @@ public final class BasicComparison {
             return 0;
         }
     }
+    private static final class SimplifyingTermComparator implements Comparator<Expression> {
+        @Override
+        public int compare(Expression o1, Expression o2) {
+            if (isNumeric(o1) && isNumeric(o2)) {
+                return compareNumericConstants(o2, o1);
+            } else if (isNumeric(o1)) {
+                return -1;
+            }
+            else if (isNumeric(o2)) {
+                return 1;
+            }
+            else if (o1 instanceof Term && o2 instanceof Term) {
+                return BasicComparison.compare(((Term)o1).getFactors(false), ((Term)o2).getFactors(false), this);
+            }
+            else if (o1 instanceof Term && !o2.isConstant()) {
+                return BasicComparison.compare(((Term)o1).getFactors(false), Collections.singletonList(o2), this);
+            }
+            else if (o2 instanceof Term && !o1.isConstant()) {
+                return BasicComparison.compare(Collections.singletonList(o1), ((Term)o2).getFactors(false), this);
+            }
+            else if (o1 instanceof Variable && o2 instanceof Variable) {
+                return ((Variable)o1).getName().compareTo((((Variable) o2).getName()));
+            }
+            else if (o1 instanceof Exponent || o2 instanceof Exponent){
+                int res = compare(getBase(o1), getBase(o2));
+                if (res == 0) {
+                    res = compare(getPower(o1), getPower(o2));
+                }
+                return res;
+            }
+            return 0;
+        }
+    }
 
     private static boolean isNumeric(Expression o1) {
         return o1 instanceof NumericConstant;
@@ -95,4 +169,6 @@ public final class BasicComparison {
         }
         return 0;
     }
+
+    private BasicComparison() {}
 }

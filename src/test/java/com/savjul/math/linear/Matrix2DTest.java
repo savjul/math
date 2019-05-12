@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.function.Function;
 
-public class Matrix2DTest {
+public final class Matrix2DTest {
     public Expression[][] variables(String[][] names) {
         Expression[][] variables = new Expression[names.length][];
         for (int idx = 0; idx < names.length; idx++) {
@@ -142,12 +142,12 @@ public class Matrix2DTest {
                 { Variable.of("y1"), Variable.of("y2"), Variable.of("y3"), },
                 { Variable.of("z1"), Variable.of("z2"), Variable.of("z3"), },
         });
-        Function<Expression, Expression> c = VariableExpander.get()
+        Function<Expression, Expression> variableExpander = VariableExpander.get()
                 .add("a1", Variable.of("x1")).add("a2", Variable.of("x2")).add("a3", Variable.of("x3"))
                 .add("b1", Variable.of("y1")).add("b2", Variable.of("y2")).add("b3", Variable.of("y3"))
                 .add("c1", Variable.of("z1")).add("c2", Variable.of("z2")).add("c3", Variable.of("z3"))
                 .build();
-        Assert.assertEquals(B, A.apply(c));
+        Assert.assertEquals(B, A.apply(variableExpander));
     }
 
     @Test

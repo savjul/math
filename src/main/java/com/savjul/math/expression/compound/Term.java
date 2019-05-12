@@ -19,7 +19,7 @@ public final class Term extends AbstractBaseExpression {
         return of(Stream.of(factors));
     }
 
-    public static Expression of(Stream<Expression> factors) {
+    public static Term of(Stream<Expression> factors) {
         return new Term(factors);
     }
 

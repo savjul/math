@@ -31,7 +31,7 @@ public final class Vector {
     public Vector apply(Function<Expression, Expression> mapping) {
         Expression[] result = new Expression[this.values.length];
         for (int idx = 0; idx < result.length; idx++) {
-            result[idx] = mapping.apply(this.values[idx]);
+            result[idx] = this.values[idx].apply(mapping);
         }
         return new Vector(result);
     }

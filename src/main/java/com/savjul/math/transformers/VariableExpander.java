@@ -71,20 +71,24 @@ public final class VariableExpander extends TopDownVisitor<Deque<Expression>> {
 
     @Override
     public void visit(Deque<Expression> state, Term expression, Expression parent) {
+        state.addLast(expression);
         super.visit(state, expression, parent);
         Deque<Expression> factors = new ArrayDeque<>(expression.getFactors().size());
-        for (int idx = 0; idx < expression.getFactors().size(); idx++) {
-            factors.addFirst(state.removeLast());
+        Expression e;
+        while ((e = state.removeLast()) != expression) {
+            factors.addFirst(e);
         }
         state.addLast(Term.of(factors));
     }
 
     @Override
     public void visit(Deque<Expression> state, Polynomial expression, Expression parent) {
+        state.addLast(expression);
         super.visit(state, expression, parent);
         Deque<Expression> terms = new ArrayDeque<>(expression.getTerms().size());
-        for (int idx = 0; idx < expression.getTerms().size(); idx++) {
-            terms.addFirst(state.removeLast());
+        Expression e;
+        while ((e = state.removeLast()) != expression) {
+            terms.addFirst(e);
         }
         state.addLast(Polynomial.of(terms));
     }

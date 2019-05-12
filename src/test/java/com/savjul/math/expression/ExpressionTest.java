@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import java.util.function.Function;
 
-public class ExpressionTest {
+public final class ExpressionTest {
     @Test
     public void testPolynomialWithExponent() {
         Expression e = Variable.of("x").pow(IntegerConstant.of(2)).plus(Variable.of("x"));
@@ -145,14 +145,14 @@ public class ExpressionTest {
     public void testWithContext() {
         Expression e1 = Variable.of("x").pow(Variable.of("y"));
         Expression e2 = Variable.of("y").plus(Variable.of("x")).plus(IntegerConstant.of(3));
-        Function<Expression, Expression> c = VariableExpander.get()
+        Function<Expression, Expression> variableExpander = VariableExpander.get()
                 .add("x", 3)
                 .add("y", 5)
                 .build();
         Expression res = e1.times(e2).simplify();
         Assert.assertEquals("(x^y)y + x^(y + 1) + 3(x^y)", res.toString());
-        Assert.assertEquals("(3^5)5 + 3^(5 + 1) + 3(3^5)", c.apply(res).toString());
-        Assert.assertEquals("2673", c.apply(res).simplify().toString());
+        Assert.assertEquals("(3^5)5 + 3^(5 + 1) + 3(3^5)", variableExpander.apply(res).toString());
+        Assert.assertEquals("2673", res.apply(variableExpander).simplify().toString());
     }
 
     @Test
@@ -212,8 +212,8 @@ public class ExpressionTest {
     @Test(expected = Exception.class)
     public void testEvaluationToDivisionByZero() {
         Expression e1 = IntegerConstant.ONE.divideBy(Variable.of("x"));
-        Function<Expression, Expression> c = VariableExpander.get().add("x", 0).build();
-        c.apply(e1);
+        Function<Expression, Expression> variableExpander = VariableExpander.get().add("x", 0).build();
+        Expression e2 = e1.apply(variableExpander);
     }
 
     @Test

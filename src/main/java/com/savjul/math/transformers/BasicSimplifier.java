@@ -101,10 +101,10 @@ public final class BasicSimplifier {
                 else if (e1 instanceof DoubleConstant && e2 instanceof DoubleConstant) {
                     input.add(add((DoubleConstant) e1, (DoubleConstant) e2));
                 }
-                else if (!getNonConstants(e1).isEmpty() && getNonConstants(e1).equals(getNonConstants(e2))) {
-                    Expression constant1 = getConstantCoefficient(e1);
-                    Expression constant2 = getConstantCoefficient(e2);
-                    List<Expression> shared = getNonConstants(e1);
+                else if (!BasicComparison.getNonConstants(e1).isEmpty() && BasicComparison.getNonConstants(e1).equals(BasicComparison.getNonConstants(e2))) {
+                    Expression constant1 = BasicComparison.getConstantCoefficient(e1);
+                    Expression constant2 = BasicComparison.getConstantCoefficient(e2);
+                    List<Expression> shared = BasicComparison.getNonConstants(e1);
                     Expression e3 = simplifyFactors(Stream.concat(shared.stream(), Stream.of(simplifyTerms(constant1, constant2))));
                     input.add(e3);
                 }
@@ -157,8 +157,8 @@ public final class BasicSimplifier {
                 else if (e1 instanceof Rational) {
                     result.add(simplify(Rational.of(simplifyFactors(((Rational) e1).getNumerator(), e2), ((Rational) e1).getDenominator())));
                 }
-                else if (getBase(e1).equals(getBase(e2))) {
-                    result.add(pow(getBase(e1), simplifyTerms(getPower(e1), getPower(e2))));
+                else if (BasicComparison.getBase(e1).equals(BasicComparison.getBase(e2))) {
+                    result.add(pow(BasicComparison.getBase(e1), simplifyTerms(BasicComparison.getPower(e1), BasicComparison.getPower(e2))));
                 }
                 else if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
                     input.add(multiply((Polynomial) e1, (Polynomial) e2));
@@ -239,44 +239,6 @@ public final class BasicSimplifier {
 
     private static boolean isOne(Expression e) {
         return e.equals(IntegerConstant.ONE) || e.equals(DoubleConstant.ONE);
-    }
-
-    private static Expression getConstantCoefficient(Expression expression) {
-        if (expression instanceof Term) {
-            return simplifyFactors(((Term)expression).getFactors().stream().filter(Expression::isConstant));
-        } else if (expression.isConstant()) {
-            return expression;
-        } else {
-            return IntegerConstant.ONE;
-        }
-    }
-
-    private static List<Expression> getNonConstants(Expression expression) {
-        if (expression instanceof Term) {
-            return ((Term)expression).getFactors().stream().filter(f->!f.isConstant()).collect(Collectors.toList());
-        } else if (expression.isConstant()) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(expression);
-        }
-    }
-
-    private static Expression getBase(Expression expression) {
-        if (expression instanceof Exponent) {
-            return ((Exponent) expression).getBase();
-        }
-        else {
-            return expression;
-        }
-    }
-
-    private static Expression getPower(Expression expression) {
-        if (expression instanceof Exponent) {
-            return ((Exponent) expression).getPower();
-        }
-        else {
-            return IntegerConstant.ONE;
-        }
     }
 
     private static Expression pow(Expression base, Expression power) {

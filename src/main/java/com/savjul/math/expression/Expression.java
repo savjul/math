@@ -1,6 +1,6 @@
 package com.savjul.math.expression;
 
-import com.savjul.math.transformers.Visitor;
+import java.util.function.Function;
 
 public interface Expression {
     Expression plus(Expression o);
@@ -19,5 +19,7 @@ public interface Expression {
 
     Expression simplify();
 
-    <T> void visit(T state, Visitor<T> visitor);
+    default Expression apply(Function<Expression, Expression> transformation) {
+        return transformation.apply(this);
+    }
 }

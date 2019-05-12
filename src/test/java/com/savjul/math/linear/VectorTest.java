@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.function.Function;
 
-public class VectorTest {
+public final class VectorTest {
     @Test
     public void testVectorAddition() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
@@ -85,12 +85,12 @@ public class VectorTest {
         Vector b = Vector.of(Variable.of("b1"), Variable.of("b2"), Variable.of("b3"));
         Vector c = Vector.of(Variable.of("c1"), Variable.of("c2"), Variable.of("c3"));
         Vector lhs = a.cross(b).cross(c);
-        lhs = lhs.simplify().simplify();
+        lhs = lhs.simplify();
         Vector rhs = b.times(a.dot(c)).plus(a.times(b.dot(c)).times(IntegerConstant.MINUS_ONE));
-        rhs = rhs.simplify().simplify();
-        Assert.assertEquals(lhs.getValues()[0].simplify(), rhs.getValues()[0].simplify());
-        Assert.assertEquals(lhs.getValues()[1].simplify(), rhs.getValues()[1].simplify());
-        Assert.assertEquals(lhs.getValues()[2].simplify(), rhs.getValues()[2].simplify());
+        rhs = rhs.simplify();
+        Assert.assertEquals(lhs.getValues()[0], rhs.getValues()[0]);
+        Assert.assertEquals(lhs.getValues()[1], rhs.getValues()[1]);
+        Assert.assertEquals(lhs.getValues()[2], rhs.getValues()[2]);
         Assert.assertEquals(lhs, rhs);
     }
 
@@ -99,15 +99,16 @@ public class VectorTest {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("x^2 + y^2 + z^2", res.toString());
-        Function<Expression, Expression> c = VariableExpander.get()
+        Function<Expression, Expression> variableExpander = VariableExpander.get()
                 .add("x", 1)
                 .add("y", 2)
                 .add("z", 3).build();
-        Expression res2 = c.apply(res);
+
+        Expression res2 = res.apply(variableExpander);
         Assert.assertEquals("1^2 + 2^2 + 3^2", res2.toString());
         Assert.assertEquals("14", res2.simplify().toString());
 
-        Vector v2 = v1.apply(c);
+        Vector v2 = v1.apply(variableExpander);
         Assert.assertEquals("14", v2.dot(v2).simplify().toString());
     }
 }

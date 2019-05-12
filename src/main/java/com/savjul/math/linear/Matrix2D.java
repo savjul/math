@@ -110,7 +110,7 @@ public final class Matrix2D {
         for (int idx = 0; idx < matrix.length; idx++) {
             Expression[] row = new Expression[this.matrix[0].length];
             for (int jdx = 0; jdx < row.length; jdx++) {
-                row[jdx] = mapping.apply(this.matrix[idx][jdx]);
+                row[jdx] = this.matrix[idx][jdx].apply(mapping);
             }
             matrix[idx] = row;
         }
