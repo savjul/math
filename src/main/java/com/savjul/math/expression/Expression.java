@@ -1,11 +1,7 @@
 package com.savjul.math.expression;
 
 public interface Expression {
-    Expression withParent(Expression parent);
-
     Expression withContext(Context context);
-
-    String render();
 
     Expression plus(Expression o);
 
@@ -20,6 +16,4 @@ public interface Expression {
     Expression pow(Expression o);
 
     Expression simplify();
-
-    Expression getParent();
 }

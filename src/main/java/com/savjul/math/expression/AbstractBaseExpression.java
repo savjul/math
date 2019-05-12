@@ -1,12 +1,6 @@
 package com.savjul.math.expression;
 
 public abstract class AbstractBaseExpression implements Expression {
-    private final Expression parent;
-
-    protected AbstractBaseExpression(Expression parent) {
-        this.parent = parent;
-    }
-
     @Override
     public Expression withContext(Context context) {
         return this;
@@ -43,12 +37,7 @@ public abstract class AbstractBaseExpression implements Expression {
     }
 
     @Override
-    public Expression getParent() {
-        return parent;
-    }
-
-    @Override
     public String toString() {
-        return this.render();
+        return BasicRenderer.instance().render(this);
     }
 }

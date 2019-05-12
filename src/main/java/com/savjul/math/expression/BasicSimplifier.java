@@ -48,8 +48,11 @@ public final class BasicSimplifier {
     private static Expression simplify(Exponent expression) {
         Expression base = simplify(expression.getBase());
         Expression power = simplify(expression.getPower());
-        if (power.equals(IntegerConstant.ONE) || power.equals(DoubleConstant.ONE) ) {
+        if (isOne(power)) {
             return expression.getBase();
+        }
+        else if (isZero(base)) {
+            return IntegerConstant.ZERO;
         }
         else if (base instanceof DoubleConstant && power instanceof DoubleConstant) {
             return DoubleConstant.of(Math.pow(((DoubleConstant)base).getValue(), ((DoubleConstant) power).getValue()));

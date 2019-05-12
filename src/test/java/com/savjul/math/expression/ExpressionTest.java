@@ -13,7 +13,7 @@ public class ExpressionTest {
     @Test
     public void testPolynomialWithConstantMultiple() {
         Expression e1 = Variable.of("x").pow(IntegerConstant.of(3)).plus(Variable.of("x").pow(IntegerConstant.of(3))).simplify();
-        Assert.assertEquals("2x^3", e1.toString());
+        Assert.assertEquals("2(x^3)", e1.toString());
     }
 
     @Test
@@ -21,7 +21,7 @@ public class ExpressionTest {
         Expression x = Variable.of("x");
         Expression x2 = IntegerConstant.of(2).times(Variable.of("x"));
         Expression res = x.times(x2).simplify();
-        Assert.assertEquals("2x^2", res.toString());
+        Assert.assertEquals("2(x^2)", res.toString());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class ExpressionTest {
     @Test
     public void testSimplicationOfTwoVariableTerm() {
         Expression e1 = Variable.of("x").times(Variable.of("y")).times(Variable.of("x")).simplify();
-        Assert.assertEquals("x^2y", e1.toString());
+        Assert.assertEquals("(x^2)y", e1.toString());
     }
 
     @Test
@@ -77,14 +77,14 @@ public class ExpressionTest {
 
     @Test
     public void testPowerOfOne() {
-        Expression e = Variable.of("x").pow(IntegerConstant.ONE);
+        Expression e = Variable.of("x").pow(IntegerConstant.ONE).simplify();
         Assert.assertEquals(Variable.of("x"), e);
         Assert.assertEquals("x", e.toString());
     }
 
     @Test
     public void testBaseOfZero() {
-        Expression e = IntegerConstant.ZERO.pow(Variable.of("x"));
+        Expression e = IntegerConstant.ZERO.pow(Variable.of("x")).simplify();
         Assert.assertEquals(IntegerConstant.ZERO, e);
     }
 
@@ -109,7 +109,7 @@ public class ExpressionTest {
         Expression y = Variable.of("y");
         Expression e1 = x.times(x).times(y);
         Expression res = x.times(e1).simplify();
-        Assert.assertEquals("x^3y", res.toString());
+        Assert.assertEquals("(x^3)y", res.toString());
     }
 
     @Test
@@ -118,7 +118,7 @@ public class ExpressionTest {
         Expression y = Variable.of("y");
         Expression e1 = x.times(y).times(y);
         Expression res = y.times(e1).simplify();
-        Assert.assertEquals("y^3x", res.toString());
+        Assert.assertEquals("(y^3)x", res.toString());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class ExpressionTest {
                 .build();
         Expression res = e1.times(e2).simplify();
         Assert.assertEquals("(x^y)y + x^(y + 1) + 3(x^y)", res.toString());
-        Assert.assertEquals("3^55 + 3^(5 + 1) + 33^5", res.withContext(c).toString());
+        Assert.assertEquals("(3^5)5 + 3^(5 + 1) + 3(3^5)", res.withContext(c).toString());
         Assert.assertEquals("2673", res.withContext(c).simplify().toString());
     }
 

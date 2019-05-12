@@ -6,26 +6,20 @@ public final class Rational extends AbstractBaseExpression {
     private final Expression numerator;
     private final Expression denominator;
 
-    private Rational(Expression parent, Expression numerator, Expression denominator) {
-        super(parent);
+    private Rational(Expression numerator, Expression denominator) {
         Objects.requireNonNull(numerator);
         Objects.requireNonNull(denominator);
         if (denominator.equals(IntegerConstant.ZERO)) {
             throw new RuntimeException("Division by zero");
         }
-        this.numerator = numerator.withParent(this);
-        this.denominator = denominator.withParent(this);
+        this.numerator = numerator;
+        this.denominator = denominator;
     }
 
-    public static Expression of(Expression numerator, Expression denominator) {
-        return new Rational(null, numerator, denominator);
+    public static Rational of(Expression numerator, Expression denominator) {
+        return new Rational(numerator, denominator);
     }
 
-
-    @Override
-    public Expression withParent(Expression parent) {
-        return new Rational(parent, this.numerator, this.denominator);
-    }
 
     @Override
     public Expression invert() {
@@ -48,11 +42,6 @@ public final class Rational extends AbstractBaseExpression {
 
     public Expression getDenominator() {
         return denominator;
-    }
-
-    @Override
-    public String render() {
-        return numerator.render() + "/" + denominator.render();
     }
 
     @Override

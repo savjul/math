@@ -8,9 +8,8 @@ import java.util.stream.Stream;
 public final class Polynomial extends AbstractBaseExpression {
     private final List<Expression> terms;
 
-    private Polynomial(Expression parent, Stream<Expression> terms) {
-        super(parent);
-        this.terms = terms.map(t->t.withParent(this)).collect(Collectors.toList());
+    private Polynomial(Stream<Expression> terms) {
+        this.terms = terms.collect(Collectors.toList());
     }
 
     public static Polynomial of(Expression... terms) {
@@ -18,20 +17,16 @@ public final class Polynomial extends AbstractBaseExpression {
     }
 
     public static Polynomial of(Collection<Expression> terms) {
-        return new Polynomial(null, terms.stream());
+        return new Polynomial(terms.stream());
     }
 
     public static Polynomial of(Stream<Expression> terms) {
-        return new Polynomial(null, terms);
-    }
-
-    public Polynomial withParent(Expression parent) {
-        return new Polynomial(parent, this.terms.stream());
+        return new Polynomial(terms);
     }
 
     @Override
     public Expression withContext(Context context) {
-        return new Polynomial(null,
+        return new Polynomial(
                 this.terms.stream().map(e->e.withContext(context)));
     }
 
@@ -48,12 +43,6 @@ public final class Polynomial extends AbstractBaseExpression {
 
     public List<Expression> getTerms() {
         return this.terms;
-    }
-
-    @Override
-    public String render() {
-        String result = String.join(" + ", terms.stream().map(Expression::render).collect(Collectors.toList()));
-        return this.getParent() != null ? "(" + result + ")" : result;
     }
 
     @Override

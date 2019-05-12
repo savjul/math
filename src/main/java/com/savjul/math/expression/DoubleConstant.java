@@ -3,33 +3,22 @@ package com.savjul.math.expression;
 import java.util.Objects;
 
 public final class DoubleConstant extends NumericConstant {
-    public static final DoubleConstant ZERO = new DoubleConstant(null, 0.0);
-    public static final DoubleConstant ONE = new DoubleConstant(null, 1.0);
+    public static final DoubleConstant ZERO = new DoubleConstant(0.0);
+    public static final DoubleConstant ONE = new DoubleConstant(1.0);
 
     private final Double value;
 
-    public static Expression of(Double value) {
-        return new DoubleConstant(null, value);
+    public static DoubleConstant of(Double value) {
+        return new DoubleConstant(value);
     }
 
-    private DoubleConstant(Expression parent, Double value) {
-        super(parent);
+    private DoubleConstant(Double value) {
         this.value = value;
-    }
-
-    @Override
-    public Expression withParent(Expression parent) {
-        return new DoubleConstant(parent, value);
     }
 
     @Override
     public Double getValue() {
         return value;
-    }
-
-    @Override
-    public String render() {
-        return this.value.toString();
     }
 
     @Override

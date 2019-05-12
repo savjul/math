@@ -8,33 +8,22 @@ public final class IntegerConstant extends NumericConstant {
     public static final IntegerConstant ONE = IntegerConstant.of(1);
     private final Long value;
 
-    private IntegerConstant(Expression parent, Long value) {
-        super(parent);
+    private IntegerConstant(Long value) {
         Objects.requireNonNull(value);
         this.value = value;
     }
 
     public static IntegerConstant of(Long value) {
-        return new IntegerConstant(null, value);
+        return new IntegerConstant(value);
     }
 
     public static IntegerConstant of(Integer value) {
-        return new IntegerConstant(null, value.longValue());
+        return new IntegerConstant(value.longValue());
     }
 
     @Override
     public Long getValue() {
         return value;
-    }
-
-    @Override
-    public IntegerConstant withParent(Expression parent) {
-        return new IntegerConstant(parent, this.value);
-    }
-
-    @Override
-    public String render() {
-        return this.value.toString();
     }
 
     @Override

@@ -18,7 +18,7 @@ public class VectorTest {
     public void testMultiplicationByScalar() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Vector res = v1.times(Variable.of("x")).times(IntegerConstant.of(4)).simplify();
-        Assert.assertEquals("[4x^2, 4xy, 4xz]", res.toString());
+        Assert.assertEquals("[4(x^2), 4xy, 4xz]", res.toString());
     }
 
     @Test

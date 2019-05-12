@@ -6,35 +6,15 @@ public final class Exponent extends AbstractBaseExpression {
     private final Expression base;
     private final Expression power;
 
-    private Exponent(Expression parent, Expression base, Expression power) {
-        super(parent);
+    private Exponent(Expression base, Expression power) {
         Objects.requireNonNull(base);
         Objects.requireNonNull(power);
-        this.base = base.withParent(this);
-        this.power = power.withParent(this);
+        this.base = base;
+        this.power = power;
     }
 
-    public static Expression of(Expression base, Expression exponent) {
-        if (base.equals(IntegerConstant.ONE)) {
-            return IntegerConstant.ONE;
-        }
-        else if (base.equals(IntegerConstant.ZERO)) {
-            if (exponent.equals(IntegerConstant.ZERO)) {
-                throw new RuntimeException("Can't evaluate 0^0");
-            }
-            else {
-                return IntegerConstant.ZERO;
-            }
-        }
-        else if (exponent.equals(IntegerConstant.ONE)) {
-            return base;
-        }
-        else if (exponent.equals(IntegerConstant.ZERO)) {
-            return IntegerConstant.ONE;
-        }
-        else {
-            return new Exponent(null, base, exponent);
-        }
+    public static Exponent of(Expression base, Expression exponent) {
+        return new Exponent(base, exponent);
     }
 
     public Expression getBase() {
@@ -51,19 +31,8 @@ public final class Exponent extends AbstractBaseExpression {
     }
 
     @Override
-    public Exponent withParent(Expression parent) {
-        return new Exponent(parent, this.base, this.power);
-    }
-
-    @Override
     public Expression withContext(Context context) {
-        return new Exponent(null, this.base.withContext(context), this.power.withContext(context));
-    }
-
-    @Override
-    public String render() {
-        String result = this.base.render() + "^" + this.power.render();
-        return getParent() instanceof Term && ! (this.power instanceof IntegerConstant) ? "(" + result + ")" : result;
+        return new Exponent(this.base.withContext(context), this.power.withContext(context));
     }
 
     @Override
