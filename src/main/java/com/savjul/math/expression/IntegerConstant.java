@@ -2,7 +2,7 @@ package com.savjul.math.expression;
 
 import java.util.Objects;
 
-public final class IntegerConstant extends AbstractBaseExpression {
+public final class IntegerConstant extends NumericConstant {
     public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
     public static final IntegerConstant ZERO = IntegerConstant.of(0);
     public static final IntegerConstant ONE = IntegerConstant.of(1);
@@ -22,6 +22,7 @@ public final class IntegerConstant extends AbstractBaseExpression {
         return new IntegerConstant(null, value.longValue());
     }
 
+    @Override
     public Long getValue() {
         return value;
     }
@@ -29,11 +30,6 @@ public final class IntegerConstant extends AbstractBaseExpression {
     @Override
     public IntegerConstant withParent(Expression parent) {
         return new IntegerConstant(parent, this.value);
-    }
-
-    @Override
-    public boolean isConstant() {
-        return true;
     }
 
     @Override
@@ -52,19 +48,5 @@ public final class IntegerConstant extends AbstractBaseExpression {
     @Override
     public int hashCode() {
         return Objects.hash(value);
-    }
-
-    @Override
-    public int order() {
-        return this.getParent() instanceof Term ? ExpressionConstants.INTEGER_ORDER_TERM
-                : ExpressionConstants.INTEGER_ORDER_OTHER;
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        if (o instanceof IntegerConstant) {
-            return this.value.compareTo(((IntegerConstant) o).value);
-        }
-        return super.compareTo(o);
     }
 }

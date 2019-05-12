@@ -1,13 +1,5 @@
 package com.savjul.math.expression;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 public abstract class AbstractBaseExpression implements Expression {
     private final Expression parent;
 
@@ -18,11 +10,6 @@ public abstract class AbstractBaseExpression implements Expression {
     @Override
     public Expression withContext(Context context) {
         return this;
-    }
-
-    @Override
-    public int order() {
-        return Integer.MAX_VALUE;
     }
 
     @Override
@@ -63,21 +50,5 @@ public abstract class AbstractBaseExpression implements Expression {
     @Override
     public String toString() {
         return this.render();
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        return Integer.compare(this.order(), o.order());
-    }
-
-    static int compare(List<? extends Expression> l1, List<? extends Expression> l2) {
-        int min = Math.min(l1.size(), l2.size());
-        for (int idx = 0; idx < min; idx++) {
-            int res = l1.get(idx).compareTo(l2.get(idx));
-            if (res != 0) {
-                return res;
-            }
-        }
-        return Integer.compare(l1.size(), l2.size());
     }
 }

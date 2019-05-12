@@ -1,6 +1,7 @@
 package com.savjul.math.expression;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -9,7 +10,7 @@ public final class Polynomial extends AbstractBaseExpression {
 
     private Polynomial(Expression parent, Stream<Expression> terms) {
         super(parent);
-        this.terms = terms.map(t->t.withParent(this)).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        this.terms = terms.map(t->t.withParent(this)).collect(Collectors.toList());
     }
 
     public static Polynomial of(Expression... terms) {
@@ -45,21 +46,8 @@ public final class Polynomial extends AbstractBaseExpression {
     }
 
 
-    @Override
-    public int order() {
-        return ExpressionConstants.POLYNOMIAL_ORDER;
-    }
-
     public List<Expression> getTerms() {
         return this.terms;
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        if (o instanceof Polynomial) {
-            return compare(this.terms, ((Polynomial) o).terms);
-        }
-        return super.compareTo(o);
     }
 
     @Override

@@ -5,18 +5,6 @@ import org.junit.Test;
 
 public class ExpressionTest {
     @Test
-    public void testExpressionOrder() {
-        Expression e1 = Variable.of("x").plus(IntegerConstant.ONE);
-        Assert.assertEquals(ExpressionConstants.POLYNOMIAL_ORDER, e1.order());
-        Expression e2 = Variable.of("x").times(Variable.of("x")).times(IntegerConstant.ONE);
-        Assert.assertEquals(ExpressionConstants.TERM_ORDER, e2.order());
-        Expression e3 = Term.of(IntegerConstant.ONE);
-        Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_OTHER, e3.order());
-        Expression e4 = Term.of(IntegerConstant.MINUS_ONE, Variable.of("x"));
-        Assert.assertEquals(ExpressionConstants.INTEGER_ORDER_TERM, ((Term)e4).getFactors().get(0).order());
-    }
-
-    @Test
     public void testPolynomialWithExponent() {
         Expression e = Variable.of("x").pow(IntegerConstant.of(2)).plus(Variable.of("x"));
         Assert.assertEquals("x^2 + x", e.toString());
@@ -43,7 +31,7 @@ public class ExpressionTest {
         Expression res = e1.times(e2);
         Expression res2 = res.simplify();
         Assert.assertEquals("(x + 1)(y + 3)", res.toString());
-        Assert.assertEquals("3x + xy + y + 3", res2.toString());
+        Assert.assertEquals("xy + 3x + y + 3", res2.toString());
     }
 
     @Test
@@ -74,7 +62,7 @@ public class ExpressionTest {
         Expression e1 = Variable.of("x").plus(IntegerConstant.ONE);
         Expression e2 = Variable.of("x").plus(IntegerConstant.MINUS_ONE);
         Expression res = e1.times(e2);
-        Assert.assertEquals("(x + -1)(x + 1)", res.toString());
+        Assert.assertEquals("(x + 1)(x + -1)", res.toString());
         Assert.assertEquals("x^2 + -1", res.simplify().toString());
     }
 
@@ -130,7 +118,7 @@ public class ExpressionTest {
         Expression y = Variable.of("y");
         Expression e1 = x.times(y).times(y);
         Expression res = y.times(e1).simplify();
-        Assert.assertEquals("xy^3", res.toString());
+        Assert.assertEquals("y^3x", res.toString());
     }
 
     @Test
@@ -157,8 +145,8 @@ public class ExpressionTest {
                 .add("y", 5)
                 .build();
         Expression res = e1.times(e2).simplify();
-        Assert.assertEquals("3(x^y) + (x^y)y + x^(y + 1)", res.toString());
-        Assert.assertEquals("3^(1 + 5) + 33^5 + 53^5", res.withContext(c).toString());
+        Assert.assertEquals("(x^y)y + x^(y + 1) + 3(x^y)", res.toString());
+        Assert.assertEquals("3^55 + 3^(5 + 1) + 33^5", res.withContext(c).toString());
         Assert.assertEquals("2673", res.withContext(c).simplify().toString());
     }
 
@@ -201,7 +189,7 @@ public class ExpressionTest {
     @Test
     public void testVariableDivideBy() {
         Expression e1 = IntegerConstant.ONE.plus(Variable.of("x")).divideBy(Variable.of("x"));
-        Assert.assertEquals("(x + 1)/x", e1.toString());
+        Assert.assertEquals("(1 + x)/x", e1.toString());
     }
 
     @Test

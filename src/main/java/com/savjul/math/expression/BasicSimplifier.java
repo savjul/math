@@ -13,7 +13,7 @@ public final class BasicSimplifier {
         return INSTANCE;
     }
 
-    public static Expression simplify(Expression expression) {
+    private static Expression simplify(Expression expression) {
         if (expression instanceof Term) {
             return simplifyFactors(((Term) expression).getFactors().stream());
         }
@@ -68,7 +68,7 @@ public final class BasicSimplifier {
         PriorityQueue<Expression> input = flatten(expressionStream, Polynomial::getTerms, Polynomial.class).stream().collect(Collectors.toCollection(new Supplier<PriorityQueue<Expression>>() {
             @Override
             public PriorityQueue<Expression> get() {
-                return new PriorityQueue<>(Comparator.naturalOrder());
+                return new PriorityQueue<>(BasicComparison.terms());
             }
         }));
         Deque<Expression> result = new ArrayDeque<>();
@@ -103,7 +103,8 @@ public final class BasicSimplifier {
                 }
             }
         }
-        return result.size() == 0 ? IntegerConstant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result);
+        return result.size() == 0 ? IntegerConstant.ZERO : result.size() == 1 ? result.removeLast() :
+                Polynomial.of(result.stream().sorted(BasicComparison.terms()));
     }
 
     private static Expression simplifyFactors(Expression... expressions) {
@@ -114,7 +115,7 @@ public final class BasicSimplifier {
         PriorityQueue<Expression> input = flatten(expressionStream, Term::getFactors, Term.class).stream().collect(Collectors.toCollection(new Supplier<PriorityQueue<Expression>>() {
             @Override
             public PriorityQueue<Expression> get() {
-                return new PriorityQueue<>(Comparator.naturalOrder());
+                return new PriorityQueue<>(BasicComparison.factors());
             }
         }));
         Deque<Expression> result = new ArrayDeque<>();
@@ -163,7 +164,8 @@ public final class BasicSimplifier {
                 }
             }
         }
-        return result.size() == 0 ? IntegerConstant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result);
+        return result.size() == 0 ? IntegerConstant.ONE : result.size() == 1 ? result.removeLast() :
+                Term.of(result.stream().sorted(BasicComparison.factors()));
     }
 
     private static Expression add(IntegerConstant e1, IntegerConstant e2) {

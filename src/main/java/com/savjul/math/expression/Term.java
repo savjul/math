@@ -1,6 +1,7 @@
 package com.savjul.math.expression;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -9,7 +10,7 @@ public final class Term extends AbstractBaseExpression {
 
     private Term(Expression parent, Stream<Expression> factors) {
         super(parent);
-        this.factors = factors.map(f->f.withParent(this)).sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        this.factors = factors.map(f->f.withParent(this)).collect(Collectors.toList());
     }
 
     public static Expression of(Expression... factors) {
@@ -43,57 +44,9 @@ public final class Term extends AbstractBaseExpression {
         return this.factors;
     }
 
-    private static List<Expression> getConstantPortion(Expression e) {
-        if (e instanceof Term) {
-            return ((Term) e).factors.stream().filter(Expression::isConstant).collect(Collectors.toList());
-        }
-        else {
-            if (e.isConstant()) {
-                return Collections.singletonList(e);
-            }
-            else {
-                return Collections.emptyList();
-            }
-        }
+    public List<Expression> getFactors(boolean constant) {
+        return this.factors.stream().filter(e->e.isConstant() == constant).collect(Collectors.toList());
     }
-
-    private static List<Expression> getNonConstantPortion(Expression e) {
-        if (e instanceof Term) {
-            return ((Term) e).factors.stream().filter(f->! (f.isConstant())).collect(Collectors.toList());
-        }
-        else {
-            if (!e.isConstant()) {
-                return Collections.singletonList(e);
-            }
-            else {
-                return Collections.emptyList();
-            }
-        }
-    }
-
-    @Override
-    public int order() {
-        return getNonConstantPortion(this).stream().map(Expression::order)
-                .max(Comparator.naturalOrder()).orElse(ExpressionConstants.INTEGER_ORDER_OTHER);
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        List<Expression> otherNonContantPortion = getNonConstantPortion(o);
-        if (!otherNonContantPortion.isEmpty()) {
-            int result = compare(getNonConstantPortion(this), otherNonContantPortion);
-            if (result == 0) {
-                return compare(getConstantPortion(this), getConstantPortion(o));
-            }
-            else {
-                return result;
-            }
-        }
-        else {
-            return super.compareTo(o);
-        }
-    }
-
 
     @Override
     public String render() {

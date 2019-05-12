@@ -67,21 +67,6 @@ public final class Exponent extends AbstractBaseExpression {
     }
 
     @Override
-    public int order() {
-        return ExpressionConstants.EXPONENT_ORDER;
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        if (o instanceof Exponent) {
-            Exponent other = (Exponent) o;
-            int result = this.base.compareTo(other.base);
-            return result != 0 ? result : this.power.compareTo(other.power);
-        }
-        return super.compareTo(o);
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

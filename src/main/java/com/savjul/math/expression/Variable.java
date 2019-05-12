@@ -15,6 +15,10 @@ public final class Variable extends AbstractBaseExpression {
         return new Variable(null, name);
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public Variable withParent(Expression parent) {
         return new Variable(parent, this.name);
@@ -26,21 +30,8 @@ public final class Variable extends AbstractBaseExpression {
     }
 
     @Override
-    public int order() {
-        return ExpressionConstants.VARIABLE_ORDER;
-    }
-
-    @Override
     public boolean isConstant() {
         return false;
-    }
-
-    @Override
-    public int compareTo(Expression o) {
-        if (o instanceof Variable) {
-            return this.name.compareTo(((Variable) o).name);
-        }
-        return super.compareTo(o);
     }
 
     @Override
