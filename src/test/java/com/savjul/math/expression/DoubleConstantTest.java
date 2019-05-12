@@ -1,5 +1,6 @@
 package com.savjul.math.expression;
 
+import com.savjul.math.expression.simple.DoubleConstant;
 import org.junit.Assert;
 import org.junit.Test;
 

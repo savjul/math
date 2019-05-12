@@ -1,10 +1,10 @@
 package com.savjul.math.linear;
 
-import com.savjul.math.expression.Context;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.IntegerConstant;
+import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -105,12 +105,12 @@ public final class Matrix2D {
         return new Matrix2D(matrix);
     }
 
-    public Matrix2D withContext(Context context) {
+    public Matrix2D apply(Function<Expression, Expression> mapping) {
         Expression[][] matrix = new Expression[this.matrix.length][];
         for (int idx = 0; idx < matrix.length; idx++) {
             Expression[] row = new Expression[this.matrix[0].length];
             for (int jdx = 0; jdx < row.length; jdx++) {
-                row[jdx] = this.matrix[idx][jdx].withContext(context);
+                row[jdx] = mapping.apply(this.matrix[idx][jdx]);
             }
             matrix[idx] = row;
         }
@@ -118,15 +118,7 @@ public final class Matrix2D {
     }
 
     public Matrix2D simplify() {
-        Expression[][] matrix = new Expression[this.matrix.length][];
-        for (int idx = 0; idx < matrix.length; idx++) {
-            Expression[] row = new Expression[this.matrix[0].length];
-            for (int jdx = 0; jdx < row.length; jdx++) {
-                row[jdx] = this.matrix[idx][jdx].simplify();
-            }
-            matrix[idx] = row;
-        }
-        return new Matrix2D(matrix);
+        return apply(Expression::simplify);
     }
 
     public Expression trace() {

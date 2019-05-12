@@ -1,4 +1,7 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.compound;
+
+import com.savjul.math.expression.AbstractBaseExpression;
+import com.savjul.math.expression.Expression;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,12 +28,6 @@ public final class Polynomial extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression withContext(Context context) {
-        return new Polynomial(
-                this.terms.stream().map(e->e.withContext(context)));
-    }
-
-    @Override
     public Expression times(Expression o) {
         return super.times(o);
     }
@@ -40,6 +37,10 @@ public final class Polynomial extends AbstractBaseExpression {
         return this.terms.stream().allMatch(Expression::isConstant);
     }
 
+    @Override
+    public boolean isCompound() {
+        return true;
+    }
 
     public List<Expression> getTerms() {
         return this.terms;

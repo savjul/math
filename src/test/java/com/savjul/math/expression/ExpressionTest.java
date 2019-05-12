@@ -1,7 +1,12 @@
 package com.savjul.math.expression;
 
+import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Variable;
+import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.function.Function;
 
 public class ExpressionTest {
     @Test
@@ -140,14 +145,14 @@ public class ExpressionTest {
     public void testWithContext() {
         Expression e1 = Variable.of("x").pow(Variable.of("y"));
         Expression e2 = Variable.of("y").plus(Variable.of("x")).plus(IntegerConstant.of(3));
-        Context c = ContextBuilder.get()
+        Function<Expression, Expression> c = VariableExpander.get()
                 .add("x", 3)
                 .add("y", 5)
                 .build();
         Expression res = e1.times(e2).simplify();
         Assert.assertEquals("(x^y)y + x^(y + 1) + 3(x^y)", res.toString());
-        Assert.assertEquals("(3^5)5 + 3^(5 + 1) + 3(3^5)", res.withContext(c).toString());
-        Assert.assertEquals("2673", res.withContext(c).simplify().toString());
+        Assert.assertEquals("(3^5)5 + 3^(5 + 1) + 3(3^5)", c.apply(res).toString());
+        Assert.assertEquals("2673", c.apply(res).simplify().toString());
     }
 
     @Test
@@ -207,8 +212,8 @@ public class ExpressionTest {
     @Test(expected = Exception.class)
     public void testEvaluationToDivisionByZero() {
         Expression e1 = IntegerConstant.ONE.divideBy(Variable.of("x"));
-        Context context = ContextBuilder.get().add("x", 0).build();
-        e1.withContext(context);
+        Function<Expression, Expression> c = VariableExpander.get().add("x", 0).build();
+        c.apply(e1);
     }
 
     @Test

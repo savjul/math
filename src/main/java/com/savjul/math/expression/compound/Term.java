@@ -1,4 +1,7 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.compound;
+
+import com.savjul.math.expression.AbstractBaseExpression;
+import com.savjul.math.expression.Expression;
 
 import java.util.Collection;
 import java.util.List;
@@ -25,8 +28,8 @@ public final class Term extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression withContext(Context context) {
-        return new Term(this.factors.stream().map(f->f.withContext(context)));
+    public boolean isCompound() {
+        return true;
     }
 
     @Override

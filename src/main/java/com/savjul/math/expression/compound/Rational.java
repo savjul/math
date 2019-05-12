@@ -1,4 +1,8 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.compound;
+
+import com.savjul.math.expression.AbstractBaseExpression;
+import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.Objects;
 
@@ -32,8 +36,8 @@ public final class Rational extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression withContext(Context context) {
-        return Rational.of(this.numerator.withContext(context), this.denominator.withContext(context));
+    public boolean isCompound() {
+        return true;
     }
 
     public Expression getNumerator() {

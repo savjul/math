@@ -1,8 +1,13 @@
 package com.savjul.math.linear;
 
-import com.savjul.math.expression.*;
+import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Variable;
+import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.function.Function;
 
 public class Matrix2DTest {
     public Expression[][] variables(String[][] names) {
@@ -137,12 +142,12 @@ public class Matrix2DTest {
                 { Variable.of("y1"), Variable.of("y2"), Variable.of("y3"), },
                 { Variable.of("z1"), Variable.of("z2"), Variable.of("z3"), },
         });
-        Context context = ContextBuilder.get()
+        Function<Expression, Expression> c = VariableExpander.get()
                 .add("a1", Variable.of("x1")).add("a2", Variable.of("x2")).add("a3", Variable.of("x3"))
                 .add("b1", Variable.of("y1")).add("b2", Variable.of("y2")).add("b3", Variable.of("y3"))
                 .add("c1", Variable.of("z1")).add("c2", Variable.of("z2")).add("c3", Variable.of("z3"))
                 .build();
-        Assert.assertEquals(B, A.withContext(context));
+        Assert.assertEquals(B, A.apply(c));
     }
 
     @Test

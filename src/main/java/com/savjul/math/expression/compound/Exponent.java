@@ -1,4 +1,7 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.compound;
+
+import com.savjul.math.expression.AbstractBaseExpression;
+import com.savjul.math.expression.Expression;
 
 import java.util.Objects;
 
@@ -31,8 +34,8 @@ public final class Exponent extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression withContext(Context context) {
-        return new Exponent(this.base.withContext(context), this.power.withContext(context));
+    public boolean isCompound() {
+        return true;
     }
 
     @Override

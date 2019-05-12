@@ -1,10 +1,10 @@
 package com.savjul.math.linear;
 
-import com.savjul.math.expression.Context;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.IntegerConstant;
+import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.Arrays;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,20 +28,16 @@ public final class Vector {
         return new Vector(Arrays.copyOf(values, values.length));
     }
 
-    public Vector withContext(Context context) {
+    public Vector apply(Function<Expression, Expression> mapping) {
         Expression[] result = new Expression[this.values.length];
         for (int idx = 0; idx < result.length; idx++) {
-            result[idx] = this.values[idx].withContext(context);
+            result[idx] = mapping.apply(this.values[idx]);
         }
         return new Vector(result);
     }
 
     public Vector simplify() {
-        Expression[] result = new Expression[this.values.length];
-        for (int idx = 0; idx < result.length; idx++) {
-            result[idx] = this.values[idx].simplify();
-        }
-        return new Vector(result);
+        return apply(Expression::simplify);
     }
 
     public Vector plus(Vector o) {

@@ -1,4 +1,7 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.simple;
+
+import com.savjul.math.expression.AbstractBaseExpression;
+import com.savjul.math.expression.Expression;
 
 import java.util.Objects;
 
@@ -19,13 +22,13 @@ public final class Variable extends AbstractBaseExpression {
     }
 
     @Override
-    public Expression withContext(Context context) {
-        return context.getValue(this.name, this);
+    public boolean isConstant() {
+        return false;
     }
 
     @Override
-    public boolean isConstant() {
-        return false;
+    public String toString() {
+        return name;
     }
 
     @Override

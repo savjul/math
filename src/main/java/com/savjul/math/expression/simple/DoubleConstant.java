@@ -1,4 +1,4 @@
-package com.savjul.math.expression;
+package com.savjul.math.expression.simple;
 
 import java.util.Objects;
 

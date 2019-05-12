@@ -1,8 +1,13 @@
 package com.savjul.math.linear;
 
-import com.savjul.math.expression.*;
+import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Variable;
+import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.function.Function;
 
 public class VectorTest {
     @Test
@@ -94,12 +99,15 @@ public class VectorTest {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("x^2 + y^2 + z^2", res.toString());
-        Context context = ContextBuilder.get()
+        Function<Expression, Expression> c = VariableExpander.get()
                 .add("x", 1)
                 .add("y", 2)
                 .add("z", 3).build();
-        Expression res2 = res.withContext(context);
+        Expression res2 = c.apply(res);
         Assert.assertEquals("1^2 + 2^2 + 3^2", res2.toString());
         Assert.assertEquals("14", res2.simplify().toString());
+
+        Vector v2 = v1.apply(c);
+        Assert.assertEquals("14", v2.dot(v2).simplify().toString());
     }
 }

@@ -1,4 +1,12 @@
-package com.savjul.math.expression;
+package com.savjul.math.transformers;
+
+import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.compound.Exponent;
+import com.savjul.math.expression.compound.Polynomial;
+import com.savjul.math.expression.compound.Rational;
+import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.simple.DoubleConstant;
+import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.*;
 import java.util.function.Function;
@@ -7,9 +15,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class BasicSimplifier {
-    private static final Simplifier INSTANCE = BasicSimplifier::simplify;
+    private static final Function<Expression, Expression> INSTANCE = BasicSimplifier::simplify;
 
-    public static Simplifier instance() {
+    public static Function<Expression, Expression> instance() {
         return INSTANCE;
     }
 

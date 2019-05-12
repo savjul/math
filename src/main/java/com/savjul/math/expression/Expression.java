@@ -1,8 +1,8 @@
 package com.savjul.math.expression;
 
-public interface Expression {
-    Expression withContext(Context context);
+import com.savjul.math.transformers.Visitor;
 
+public interface Expression {
     Expression plus(Expression o);
 
     Expression times(Expression o);
@@ -13,7 +13,11 @@ public interface Expression {
 
     boolean isConstant();
 
+    boolean isCompound();
+
     Expression pow(Expression o);
 
     Expression simplify();
+
+    <T> void visit(T state, Visitor<T> visitor);
 }

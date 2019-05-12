@@ -1,4 +1,10 @@
-package com.savjul.math.expression;
+package com.savjul.math.transformers;
+
+import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.compound.Exponent;
+import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.simple.NumericConstant;
+import com.savjul.math.expression.simple.Variable;
 
 import java.util.Collections;
 import java.util.Comparator;
