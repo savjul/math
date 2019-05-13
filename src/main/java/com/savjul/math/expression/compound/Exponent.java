@@ -2,6 +2,7 @@ package com.savjul.math.expression.compound;
 
 import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.Objects;
 
@@ -18,6 +19,24 @@ public final class Exponent extends AbstractBaseExpression {
 
     public static Exponent of(Expression base, Expression exponent) {
         return new Exponent(base, exponent);
+    }
+
+    public static Expression getBase(Expression expression) {
+        if (expression instanceof Exponent) {
+            return ((Exponent) expression).getBase();
+        }
+        else {
+            return expression;
+        }
+    }
+
+    public static Expression getPower(Expression expression) {
+        if (expression instanceof Exponent) {
+            return ((Exponent) expression).getPower();
+        }
+        else {
+            return IntegerConstant.ONE;
+        }
     }
 
     public Expression getBase() {

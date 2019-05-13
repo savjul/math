@@ -2,6 +2,7 @@ package com.savjul.math.transformers;
 
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.compound.Exponent;
+import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.NumericConstant;
@@ -24,45 +25,6 @@ public final class BasicComparison {
 
     public static Comparator<Expression> termSimplify() { return SIMPLIFYING_TERM_COMPARATOR; }
 
-    public static Expression getConstantCoefficient(Expression expression) {
-        if (expression instanceof Term) {
-            List<Expression> factors = ((Term) expression).getFactors(true);
-            return factors.size() == 1 ? factors.get(0) : Term.of(factors.stream().sorted(BasicComparison.factors()));
-        } else if (expression.isConstant()) {
-            return expression;
-        } else {
-            return IntegerConstant.ONE;
-        }
-    }
-
-    public static List<Expression> getNonConstants(Expression expression) {
-        if (expression instanceof Term) {
-            return ((Term)expression).getFactors(false);
-        } else if (expression.isConstant()) {
-            return Collections.emptyList();
-        } else {
-            return Collections.singletonList(expression);
-        }
-    }
-
-    public static Expression getBase(Expression expression) {
-        if (expression instanceof Exponent) {
-            return ((Exponent) expression).getBase();
-        }
-        else {
-            return expression;
-        }
-    }
-
-    public static Expression getPower(Expression expression) {
-        if (expression instanceof Exponent) {
-            return ((Exponent) expression).getPower();
-        }
-        else {
-            return IntegerConstant.ONE;
-        }
-    }
-
     private static final class DisplayComparator implements Comparator<Expression> {
         private final boolean constantFirst;
 
@@ -80,14 +42,8 @@ public final class BasicComparison {
             else if (isNumeric(o2)) {
                 return constantFirst ? 1 : -1;
             }
-            else if (o1 instanceof Term && o2 instanceof Term) {
-                return BasicComparison.compare(((Term)o1).getFactors(false), ((Term)o2).getFactors(false), this);
-            }
-            else if (o1 instanceof Term && !o2.isConstant()) {
-                return BasicComparison.compare(((Term)o1).getFactors(false), Collections.singletonList(o2), this);
-            }
-            else if (o2 instanceof Term && !o1.isConstant()) {
-                return BasicComparison.compare(Collections.singletonList(o1), ((Term)o2).getFactors(false), this);
+            else if (o1 instanceof Term || o2 instanceof Term) {
+                return BasicComparison.compare(Term.getFactors(o1,false), Term.getFactors(o2, false), this);
             }
             else if (o1 instanceof Variable && o2 instanceof Variable) {
                 return ((Variable)o1).getName().compareTo((((Variable) o2).getName()));
@@ -109,6 +65,9 @@ public final class BasicComparison {
             else if (o2 instanceof Exponent) {
                 return 1;
             }
+            else if (o1 instanceof Polynomial || o2 instanceof Polynomial) {
+                return BasicComparison.compare(Polynomial.getTerms(o1), Polynomial.getTerms(o2), this);
+            }
             return 0;
         }
     }
@@ -123,24 +82,21 @@ public final class BasicComparison {
             else if (isNumeric(o2)) {
                 return 1;
             }
-            else if (o1 instanceof Term && o2 instanceof Term) {
-                return BasicComparison.compare(((Term)o1).getFactors(false), ((Term)o2).getFactors(false), this);
-            }
-            else if (o1 instanceof Term && !o2.isConstant()) {
-                return BasicComparison.compare(((Term)o1).getFactors(false), Collections.singletonList(o2), this);
-            }
-            else if (o2 instanceof Term && !o1.isConstant()) {
-                return BasicComparison.compare(Collections.singletonList(o1), ((Term)o2).getFactors(false), this);
+            else if (o1 instanceof Term || o2 instanceof Term) {
+                return BasicComparison.compare(Term.getFactors(o1,false), Term.getFactors(o2, false), this);
             }
             else if (o1 instanceof Variable && o2 instanceof Variable) {
                 return ((Variable)o1).getName().compareTo((((Variable) o2).getName()));
             }
             else if (o1 instanceof Exponent || o2 instanceof Exponent){
-                int res = compare(getBase(o1), getBase(o2));
+                int res = compare(Exponent.getBase(o1), Exponent.getBase(o2));
                 if (res == 0) {
-                    res = compare(getPower(o1), getPower(o2));
+                    res = compare(Exponent.getPower(o1), Exponent.getPower(o2));
                 }
                 return res;
+            }
+            else if (o1 instanceof Polynomial || o2 instanceof Polynomial) {
+                return BasicComparison.compare(Polynomial.getTerms(o1), Polynomial.getTerms(o2), this);
             }
             return 0;
         }

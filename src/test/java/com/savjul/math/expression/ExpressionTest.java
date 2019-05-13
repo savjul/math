@@ -1,7 +1,9 @@
 package com.savjul.math.expression;
 
+import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
+import com.savjul.math.transformers.BasicComparison;
 import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
 import org.junit.Test;

@@ -5,8 +5,8 @@ import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.IntegerConstant;
-import com.savjul.math.transformers.RenderingVisitor;
-import com.savjul.math.transformers.VisitingSimplifier;
+import com.savjul.math.transformers.ExpressionRenderer;
+import com.savjul.math.transformers.ExpressionSimplifier;
 
 public abstract class AbstractBaseExpression implements Expression {
     @Override
@@ -36,7 +36,7 @@ public abstract class AbstractBaseExpression implements Expression {
 
     @Override
     public Expression simplify() {
-        return this.apply(VisitingSimplifier.instance());
+        return this.apply(ExpressionSimplifier.instance());
     }
 
     @Override
@@ -46,6 +46,6 @@ public abstract class AbstractBaseExpression implements Expression {
 
     @Override
     public String toString() {
-        return RenderingVisitor.instance().apply(this);
+        return ExpressionRenderer.instance().apply(this);
     }
 }

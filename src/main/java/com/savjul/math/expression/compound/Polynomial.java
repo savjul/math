@@ -4,6 +4,7 @@ import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +45,10 @@ public final class Polynomial extends AbstractBaseExpression {
 
     public List<Expression> getTerms() {
         return this.terms;
+    }
+
+    public static List<Expression> getTerms(Expression expression) {
+        return expression instanceof Polynomial ? ((Polynomial) expression).getTerms() : Collections.singletonList(expression);
     }
 
     @Override

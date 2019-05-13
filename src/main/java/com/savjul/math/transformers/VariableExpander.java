@@ -8,13 +8,11 @@ import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class VariableExpander extends TopDownVisitor<Deque<Expression>> {
+public final class VariableExpander extends ExpressionVisitor<Expression> {
     private final Map<String, Expression> bindings;
     public static Builder get() {
         return new Builder();
@@ -48,65 +46,42 @@ public final class VariableExpander extends TopDownVisitor<Deque<Expression>> {
     }
 
     private static Expression expand(Map<String, Expression> bindings, Expression expression) {
-        Deque<Expression> state = new ArrayDeque<>();
-        VariableExpander variableExpander = new VariableExpander(bindings);
-        variableExpander.visit(state, expression, null);
-        return state.removeLast();
+        return new VariableExpander(bindings).visit(expression, null);
     }
 
     @Override
-    public void visit(Deque<Expression> state, Expression expression, Expression parent) {
-        if (expression.isCompound()) {
-            super.visit(state, expression, parent);
+    public Expression visit(Expression expression, Expression parent) {
+        if (expression instanceof Variable) {
+            return bindings.getOrDefault(((Variable)expression).getName(), expression);
         }
         else {
-            if (expression instanceof Variable) {
-                state.addLast(bindings.getOrDefault(((Variable)expression).getName(), expression));
-            }
-            else {
-                state.addLast(expression);
-            }
+            return super.visit(expression, parent);
         }
     }
 
     @Override
-    public void visit(Deque<Expression> state, Term expression, Expression parent) {
-        state.addLast(expression);
-        super.visit(state, expression, parent);
-        Deque<Expression> factors = new ArrayDeque<>(expression.getFactors().size());
-        Expression e;
-        while ((e = state.removeLast()) != expression) {
-            factors.addFirst(e);
-        }
-        state.addLast(Term.of(factors));
+    public Expression visit(Term expression, Expression parent) {
+        return Term.of(expression.getFactors().stream().map(e->visit(e, expression)));
     }
 
     @Override
-    public void visit(Deque<Expression> state, Polynomial expression, Expression parent) {
-        state.addLast(expression);
-        super.visit(state, expression, parent);
-        Deque<Expression> terms = new ArrayDeque<>(expression.getTerms().size());
-        Expression e;
-        while ((e = state.removeLast()) != expression) {
-            terms.addFirst(e);
-        }
-        state.addLast(Polynomial.of(terms));
+    public Expression visit(Polynomial expression, Expression parent) {
+        return Polynomial.of(expression.getTerms().stream().map(e->visit(e, expression)));
     }
 
     @Override
-    public void visit(Deque<Expression> state, Exponent expression, Expression parent) {
-        super.visit(state, expression, parent);
-        Expression power = state.removeLast();
-        Expression base = state.removeLast();
-        state.addLast(Exponent.of(base, power));
+    public Expression visit(Exponent expression, Expression parent) {
+        return Exponent.of(visit(expression.getBase(), expression), visit(expression.getPower(), expression));
 
     }
 
     @Override
-    public void visit(Deque<Expression> state, Rational expression, Expression parent) {
-        super.visit(state, expression, parent);
-        Expression denominator = state.removeLast();
-        Expression numerator = state.removeLast();
-        state.addLast(Rational.of(numerator, denominator));
+    public Expression visit(Rational expression, Expression parent) {
+        return Rational.of(visit(expression.getNumerator(), expression), visit(expression.getDenominator(), expression));
+    }
+
+    @Override
+    public Expression defaultValue(Expression expression, Expression parent) {
+        return expression;
     }
 }

@@ -10,39 +10,35 @@ import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> {
-    private static final VisitingSimplifier SIMPLIFIER = new VisitingSimplifier();
-    private static final Function<Expression, Expression> INSTANCE = VisitingSimplifier::expand;
+public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
+    private static final ExpressionSimplifier SIMPLIFIER = new ExpressionSimplifier();
+    private static final Function<Expression, Expression> INSTANCE = ExpressionSimplifier::expand;
 
     public static Function<Expression, Expression> instance() { return INSTANCE; }
 
     private static Expression expand(Expression expression) {
-        Deque<Expression> state = new ArrayDeque<>();
-        SIMPLIFIER.visit(state, expression, null);
-        return state.removeLast();
+        return SIMPLIFIER.visit(expression, null);
     }
 
     @Override
-    public void visit(Deque<Expression> state, Expression expression, Expression parent) {
+    public Expression visit(Expression expression, Expression parent) {
         if (expression.isCompound()) {
-            super.visit(state, expression, parent);
+            return super.visit(expression, parent);
         }
         else {
-            state.addLast(expression);
+            return expression;
         }
     }
 
     @Override
-    public void visit(Deque<Expression> state, Term expression, Expression parent) {
-        state.addLast(expression);
-        super.visit(state, expression, parent);
+    public Expression visit(Term expression, Expression parent) {
         PriorityQueue<Expression> factors = new PriorityQueue<>(BasicComparison.termSimplify());
-        Expression e;
-        while ((e = state.removeLast()) != expression) {
-            factors.add(e);
-        }
+        factors.addAll(expression.getFactors().stream().map(e->visit(e, expression))
+                .flatMap(e->e instanceof Term ? ((Term) e).getFactors().stream() : Stream.of(e))
+                .collect(Collectors.toList()));
         Deque<Expression> result = new ArrayDeque<>();
         while (!factors.isEmpty()) {
             Expression e1 = factors.remove();
@@ -71,43 +67,36 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
                     Expression e2num = ((Rational) e2).getNumerator();
                     Expression e2den = ((Rational) e2).getDenominator();
                     Rational newRational = Rational.of(e1num.times(e2num), e1den.times(e2den));
-                    visit(state, newRational, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newRational, parent));
 
                 }
                 else if (e1 instanceof Rational) {
                     Expression newNumerator = ((Rational) e1).getNumerator().times(e2);
                     Expression newDenominator = ((Rational) e1).getDenominator();
                     Rational newRational = Rational.of(newNumerator, newDenominator);
-                    visit(state, newRational, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newRational, parent));
                 }
                 else if (e2 instanceof Rational) {
                     Expression newNumerator = ((Rational) e2).getNumerator().times(e1);
                     Expression newDenominator = ((Rational) e2).getDenominator();
                     Rational newRational = Rational.of(newNumerator, newDenominator);
-                    visit(state, newRational, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newRational, parent));
                 }
-                else if (BasicComparison.getBase(e1).equals(BasicComparison.getBase(e2))) {
-                    Exponent newExponent = Exponent.of(BasicComparison.getBase(e1), BasicComparison.getPower(e1).plus(BasicComparison.getPower(e2)));
-                    visit(state, newExponent, parent);
-                    factors.add(state.removeLast());
+                else if (Exponent.getBase(e1).equals(Exponent.getBase(e2))) {
+                    Exponent newExponent = Exponent.of(Exponent.getBase(e1), Exponent.getPower(e1).plus(Exponent.getPower(e2)));
+                    factors.add(visit(newExponent, parent));
                 }
                 else if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(((Polynomial) e1).getTerms(), ((Polynomial) e2).getTerms());
-                    visit(state, newPolynomial, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newPolynomial, parent));
                 }
                 else if (e1 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(((Polynomial) e1).getTerms(), Collections.singletonList(e2));
-                    visit(state, newPolynomial, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newPolynomial, parent));
                 }
                 else if (e2 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(Collections.singletonList(e1), ((Polynomial) e2).getTerms());
-                    visit(state, newPolynomial, parent);
-                    factors.add(state.removeLast());
+                    factors.add(visit(newPolynomial, parent));
                 }
                 else {
                     result.add(e2);
@@ -115,12 +104,7 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
                 }
             }
         }
-        if (parent instanceof Term) {
-            state.addAll(result);
-        }
-        else {
-            state.addLast(result.isEmpty() ? IntegerConstant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result.stream().sorted(BasicComparison.factors())));
-        }
+        return (result.isEmpty() ? IntegerConstant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result.stream().sorted(BasicComparison.factors())));
     }
 
     private static IntegerConstant multiply(IntegerConstant e1, IntegerConstant e2) {
@@ -142,14 +126,11 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
     }
 
     @Override
-    public void visit(Deque<Expression> state, Polynomial expression, Expression parent) {
-        state.addLast(expression);
-        super.visit(state, expression, parent);
+    public Expression visit(Polynomial expression, Expression parent) {
         PriorityQueue<Expression> terms = new PriorityQueue<>(BasicComparison.terms());
-        Expression e;
-        while ((e = state.removeLast()) != expression) {
-            terms.add(e);
-        }
+        terms.addAll(expression.getTerms().stream().map(e->visit(e, expression))
+                .flatMap(e->e instanceof Polynomial ? ((Polynomial) e).getTerms().stream() : Stream.of(e))
+                .collect(Collectors.toList()));
         Deque<Expression> result = new ArrayDeque<>();
         while (!terms.isEmpty()) {
             Expression e1 = terms.remove();
@@ -169,14 +150,13 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
                 else if (e1 instanceof DoubleConstant && e2 instanceof DoubleConstant) {
                     terms.add(add((DoubleConstant) e1, (DoubleConstant) e2));
                 }
-                else if (!BasicComparison.getNonConstants(e1).isEmpty() &&
-                        BasicComparison.getNonConstants(e1).equals(BasicComparison.getNonConstants(e2))) {
-                    Expression constant1 = BasicComparison.getConstantCoefficient(e1);
-                    Expression constant2 = BasicComparison.getConstantCoefficient(e2);
-                    List<Expression> shared = BasicComparison.getNonConstants(e1);
+                else if (!Term.getNonConstants(e1).isEmpty() &&
+                        Term.getNonConstants(e1).equals(Term.getNonConstants(e2))) {
+                    Expression constant1 = Term.getConstantCoefficient(e1);
+                    Expression constant2 = Term.getConstantCoefficient(e2);
+                    List<Expression> shared = Term.getNonConstants(e1);
                     Term e3 = Term.of(Stream.concat(shared.stream(), Stream.of(constant1.plus(constant2))).sorted(BasicComparison.factors()));
-                    visit(state, e3, parent);
-                    terms.add(state.removeLast());
+                    terms.add(visit(e3, parent));
                 }
                 else {
                     result.addLast(e2);
@@ -184,12 +164,7 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
                 }
             }
         }
-        if (parent instanceof Polynomial) {
-            state.addAll(result);
-        }
-        else {
-            state.addLast(result.isEmpty() ? IntegerConstant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result.stream().sorted(BasicComparison.terms())));
-        }
+        return result.isEmpty() ? IntegerConstant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result.stream().sorted(BasicComparison.terms()));
     }
 
     private static Expression add(IntegerConstant e1, IntegerConstant e2) {
@@ -201,52 +176,50 @@ public final class VisitingSimplifier extends TopDownVisitor<Deque<Expression>> 
     }
 
     @Override
-    public void visit(Deque<Expression> state, Exponent expression, Expression parent) {
-        super.visit(state, expression, parent);
-        Expression power = state.removeLast();
-        Expression base = state.removeLast();
+    public Expression visit(Exponent expression, Expression parent) {
+        Expression power = visit(expression.getPower(), expression);
+        Expression base = visit(expression.getBase(), expression);
         if (isOne(power)) {
-            state.addLast(expression.getBase());
+            return base;
         }
         else if (isZero(base)) {
-            state.addLast(IntegerConstant.ZERO);
+            return IntegerConstant.ZERO;
         }
         else if (base instanceof DoubleConstant && power instanceof DoubleConstant) {
-            state.addLast(DoubleConstant.of(Math.pow(((DoubleConstant)base).getValue(), ((DoubleConstant) power).getValue())));
+            return DoubleConstant.of(Math.pow(((DoubleConstant)base).getValue(), ((DoubleConstant) power).getValue()));
         }
         else if (base instanceof IntegerConstant && power instanceof IntegerConstant) {
-            state.addLast(pow((IntegerConstant) base, (IntegerConstant) power));
+            return pow((IntegerConstant) base, (IntegerConstant) power);
         }
         else {
-            state.addLast(Exponent.of(base, power));
+            return Exponent.of(base, power);
         }
     }
 
     @Override
-    public void visit(Deque<Expression> state, Rational expression, Expression parent) {
-        super.visit(state, expression, parent);
-        Expression denominator = state.removeLast();
-        Expression numerator = state.removeLast();
+    public Expression visit(Rational expression, Expression parent) {
+        Expression denominator = visit(expression.getDenominator(), expression);
+        Expression numerator = visit(expression.getNumerator(), expression);
         if (isOne(denominator)) {
-            state.addLast(numerator);
+            return numerator;
         }
         else if (isZero(numerator)) {
-            state.addLast(IntegerConstant.ZERO);
+            return IntegerConstant.ZERO;
         }
         else if (denominator instanceof Rational && numerator instanceof Rational) {
             Expression newNumerator = ((Rational)numerator).getNumerator().times(((Rational)denominator).getDenominator());
             Expression newDenominator = ((Rational)numerator).getDenominator().times(((Rational)denominator).getNumerator());
             Rational newRational = Rational.of(newNumerator, newDenominator);
-            visit(state, newRational, parent);
+            return visit(newRational, parent);
         }
         else if (denominator instanceof Rational) {
             Expression newNumerator = numerator.times(((Rational) denominator).getDenominator());
             Expression newDenominator = ((Rational) denominator).getNumerator();
             Rational newRational = Rational.of(newNumerator, newDenominator);
-            visit(state, newRational, parent);
+            return visit(newRational, parent);
         }
         else {
-            state.addLast(Rational.of(numerator, denominator));
+            return Rational.of(numerator, denominator);
         }
     }
 

@@ -9,9 +9,13 @@ import com.savjul.math.expression.compound.Term;
 import java.util.List;
 import java.util.function.Function;
 
-public final class RenderingVisitor extends TopDownVisitor<StringBuilder> {
-    private static final RenderingVisitor VISITOR = new RenderingVisitor();
-    private static final Function<Expression, String> INSTANCE = RenderingVisitor::render;
+public final class ExpressionRenderer extends ExpressionVisitor<Void> {
+    private static final Function<Expression, String> INSTANCE = ExpressionRenderer::render;
+    private final StringBuilder sb;
+
+    public ExpressionRenderer(StringBuilder sb) {
+        this.sb = sb;
+    }
 
     public static Function<Expression, String> instance() {
         return INSTANCE;
@@ -19,45 +23,49 @@ public final class RenderingVisitor extends TopDownVisitor<StringBuilder> {
 
     private static String render(Expression expression) {
         StringBuilder sb = new StringBuilder();
-        VISITOR.visit(sb, expression, null);
+        new ExpressionRenderer(sb).visit(expression, null);
         return sb.toString();
     }
 
     @Override
-    public void visit(StringBuilder sb, Expression expression, Expression parent) {
+    public Void visit(Expression expression, Expression parent) {
         if (!expression.isCompound()) {
             sb.append(expression.toString());
         }
         else {
-            super.visit(sb, expression, parent);
+            super.visit(expression, parent);
         }
+        return null;
     }
 
     @Override
-    public void visit(StringBuilder sb, Polynomial expression, Expression parent) {
+    public Void visit(Polynomial expression, Expression parent) {
         if (parent instanceof Term || parent instanceof Exponent || parent instanceof Rational) sb.append('(');
         List<Expression> terms = expression.getTerms();
         int max = terms.size() - 1;
         for (int idx = 0; idx <= max; idx++) {
-            visit(sb, terms.get(idx), expression);
+            visit(terms.get(idx), expression);
             if (idx != max) sb.append(" + ");
         }
         if (parent instanceof Term || parent instanceof Exponent || parent instanceof Rational) sb.append(')');
+        return null;
     }
 
     @Override
-    public void visit(StringBuilder sb, Exponent expression, Expression parent) {
+    public Void visit(Exponent expression, Expression parent) {
         if (parent instanceof Term) sb.append('(');
-        visit(sb, expression.getBase(), expression);
+        visit(expression.getBase(), expression);
         sb.append('^');
-        visit(sb, expression.getPower(), expression);
+        visit(expression.getPower(), expression);
         if (parent instanceof Term) sb.append(')');
+        return null;
     }
 
     @Override
-    public void visit(StringBuilder sb, Rational expression, Expression parent) {
-        visit(sb, expression.getNumerator(), expression);
+    public Void visit(Rational expression, Expression parent) {
+        visit(expression.getNumerator(), expression);
         sb.append('/');
-        visit(sb, expression.getDenominator(), expression);
+        visit(expression.getDenominator(), expression);
+        return null;
     }
 }
