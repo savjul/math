@@ -2,7 +2,7 @@ package com.savjul.math.expression.compound;
 
 import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 
 import java.util.Objects;
 
@@ -13,7 +13,7 @@ public final class Rational extends AbstractBaseExpression {
     private Rational(Expression numerator, Expression denominator) {
         Objects.requireNonNull(numerator);
         Objects.requireNonNull(denominator);
-        if (denominator.equals(IntegerConstant.ZERO)) {
+        if (denominator.equals(Constant.ZERO)) {
             throw new RuntimeException("Division by zero");
         }
         this.numerator = numerator;

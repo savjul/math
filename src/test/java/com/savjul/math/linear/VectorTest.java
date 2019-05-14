@@ -1,6 +1,7 @@
 package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.VariableExpander;
@@ -14,7 +15,7 @@ public final class VectorTest {
     public void testVectorAddition() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
         Vector v2 = Vector.of(Variable.of("x")
-                .plus(IntegerConstant.ONE), Variable.of("y"), IntegerConstant.MINUS_ONE.times(Variable.of("z")));
+                .plus(Constant.ONE), Variable.of("y"), Constant.MINUS_ONE.times(Variable.of("z")));
         Vector res = v1.plus(v2).simplify();
         Assert.assertEquals("[2x + 1, 2y, 0]", res.toString());
     }
@@ -50,8 +51,8 @@ public final class VectorTest {
 
     @Test
     public void testCrossProduct() {
-        Vector v1 = Vector.of(Variable.of("x"), IntegerConstant.ZERO, IntegerConstant.ZERO);
-        Vector v2 = Vector.of(IntegerConstant.ZERO, Variable.of("y"), IntegerConstant.ZERO);
+        Vector v1 = Vector.of(Variable.of("x"), Constant.ZERO, Constant.ZERO);
+        Vector v2 = Vector.of(Constant.ZERO, Variable.of("y"), Constant.ZERO);
         Vector res = v1.cross(v2).simplify();
         Assert.assertEquals("[0, 0, xy]", res.simplify().toString());
     }
@@ -73,9 +74,9 @@ public final class VectorTest {
         Vector kxj = Vector.k.cross(Vector.j);
         Vector ixk = Vector.i.cross(Vector.k);
 
-        Assert.assertEquals(Vector.k.times(IntegerConstant.MINUS_ONE).simplify(), jxi.simplify());
-        Assert.assertEquals(Vector.i.times(IntegerConstant.MINUS_ONE).simplify(), kxj.simplify());
-        Assert.assertEquals(Vector.j.times(IntegerConstant.MINUS_ONE).simplify(), ixk.simplify());
+        Assert.assertEquals(Vector.k.times(Constant.MINUS_ONE).simplify(), jxi.simplify());
+        Assert.assertEquals(Vector.i.times(Constant.MINUS_ONE).simplify(), kxj.simplify());
+        Assert.assertEquals(Vector.j.times(Constant.MINUS_ONE).simplify(), ixk.simplify());
     }
 
     @Test
@@ -86,7 +87,7 @@ public final class VectorTest {
         Vector c = Vector.of(Variable.of("c1"), Variable.of("c2"), Variable.of("c3"));
         Vector lhs = a.cross(b).cross(c);
         lhs = lhs.simplify();
-        Vector rhs = b.times(a.dot(c)).plus(a.times(b.dot(c)).times(IntegerConstant.MINUS_ONE));
+        Vector rhs = b.times(a.dot(c)).plus(a.times(b.dot(c)).times(Constant.MINUS_ONE));
         rhs = rhs.simplify();
         Assert.assertEquals(lhs.getValues()[0], rhs.getValues()[0]);
         Assert.assertEquals(lhs.getValues()[1], rhs.getValues()[1]);

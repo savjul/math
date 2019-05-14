@@ -4,7 +4,7 @@ import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.transformers.ExpressionRenderer;
 import com.savjul.math.transformers.ExpressionSimplifier;
 
@@ -26,7 +26,7 @@ public abstract class AbstractBaseExpression implements Expression {
 
     @Override
     public Expression invert() {
-        return Rational.of(IntegerConstant.ONE, this);
+        return Rational.of(Constant.ONE, this);
     }
 
     @Override

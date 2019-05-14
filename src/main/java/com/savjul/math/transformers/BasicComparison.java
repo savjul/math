@@ -4,11 +4,9 @@ import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Term;
-import com.savjul.math.expression.simple.IntegerConstant;
-import com.savjul.math.expression.simple.NumericConstant;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Variable;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -103,11 +101,11 @@ public final class BasicComparison {
     }
 
     private static boolean isNumeric(Expression o1) {
-        return o1 instanceof NumericConstant;
+        return o1 instanceof Constant;
     }
 
     private static int compareNumericConstants(Expression o1, Expression o2) {
-        return Double.compare(((NumericConstant)o1).getValue().doubleValue(), ((NumericConstant)o2).getValue().doubleValue());
+        return Double.compare(((Constant)o1).getValue().doubleValue(), ((Constant)o2).getValue().doubleValue());
     }
 
     private static int compare(List<Expression> l1, List<Expression> l2, Comparator<Expression> comparator) {

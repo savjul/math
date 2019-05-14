@@ -7,7 +7,7 @@ import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.DoubleConstant;
 import com.savjul.math.expression.simple.IntegerConstant;
-import com.savjul.math.expression.simple.NumericConstant;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Variable;
 
 public class ExpressionVisitor<T>  {
@@ -16,7 +16,7 @@ public class ExpressionVisitor<T>  {
         else if (expression instanceof Polynomial) return visit((Polynomial) expression, parent);
         else if (expression instanceof Exponent) return visit((Exponent) expression, parent);
         else if (expression instanceof Rational) return visit((Rational) expression, parent);
-        else if (expression instanceof NumericConstant) return visit((NumericConstant) expression, parent);
+        else if (expression instanceof Constant) return visit((Constant) expression, parent);
         else if (expression instanceof Variable) return visit((Variable) expression, parent);
         return defaultValue(expression, parent);
     }
@@ -51,7 +51,7 @@ public class ExpressionVisitor<T>  {
         return defaultValue(expression, parent);
     }
 
-    public T visit(NumericConstant expression, Expression parent) {
+    public T visit(Constant expression, Expression parent) {
         if (expression instanceof DoubleConstant) return visit((DoubleConstant) expression, parent);
         if (expression instanceof IntegerConstant) return visit((IntegerConstant) expression, parent);
         return defaultValue(expression, parent);

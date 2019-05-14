@@ -5,6 +5,7 @@ import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.DoubleConstant;
 import com.savjul.math.expression.simple.IntegerConstant;
 
@@ -43,7 +44,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
         while (!factors.isEmpty()) {
             Expression e1 = factors.remove();
             if (isZero(e1)) {
-                result.clear(); factors.clear(); result.add(IntegerConstant.ZERO);
+                result.clear(); factors.clear(); result.add(Constant.ZERO);
             }
             else if (isOne(e1)) {
             }
@@ -104,7 +105,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
                 }
             }
         }
-        return (result.isEmpty() ? IntegerConstant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result.stream().sorted(BasicComparison.factors())));
+        return (result.isEmpty() ? Constant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result.stream().sorted(BasicComparison.factors())));
     }
 
     private static IntegerConstant multiply(IntegerConstant e1, IntegerConstant e2) {
@@ -164,7 +165,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
                 }
             }
         }
-        return result.isEmpty() ? IntegerConstant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result.stream().sorted(BasicComparison.terms()));
+        return result.isEmpty() ? Constant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result.stream().sorted(BasicComparison.terms()));
     }
 
     private static Expression add(IntegerConstant e1, IntegerConstant e2) {
@@ -183,7 +184,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             return base;
         }
         else if (isZero(base)) {
-            return IntegerConstant.ZERO;
+            return Constant.ZERO;
         }
         else if (base instanceof DoubleConstant && power instanceof DoubleConstant) {
             return DoubleConstant.of(Math.pow(((DoubleConstant)base).getValue(), ((DoubleConstant) power).getValue()));
@@ -204,7 +205,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             return numerator;
         }
         else if (isZero(numerator)) {
-            return IntegerConstant.ZERO;
+            return Constant.ZERO;
         }
         else if (denominator instanceof Rational && numerator instanceof Rational) {
             Expression newNumerator = ((Rational)numerator).getNumerator().times(((Rational)denominator).getDenominator());
@@ -225,7 +226,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
 
     private static Expression pow(IntegerConstant base, IntegerConstant power) {
         if (power.getValue() == 0) {
-            return IntegerConstant.ONE;
+            return Constant.ONE;
         }
         else if (power.getValue() == 1) {
             return base;
@@ -250,10 +251,10 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     private static boolean isZero(Expression e) {
-        return e.equals(IntegerConstant.ZERO) || e.equals(DoubleConstant.ZERO);
+        return e.equals(Constant.ZERO) || e.equals(Constant.DOUBLE_ZERO);
     }
 
     private static boolean isOne(Expression e) {
-        return e.equals(IntegerConstant.ONE) || e.equals(DoubleConstant.ONE);
+        return e.equals(Constant.ONE) || e.equals(Constant.DOUBLE_ONE);
     }
 }

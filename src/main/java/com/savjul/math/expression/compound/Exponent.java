@@ -2,7 +2,7 @@ package com.savjul.math.expression.compound;
 
 import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 
 import java.util.Objects;
 
@@ -35,7 +35,7 @@ public final class Exponent extends AbstractBaseExpression {
             return ((Exponent) expression).getPower();
         }
         else {
-            return IntegerConstant.ONE;
+            return Constant.ONE;
         }
     }
 

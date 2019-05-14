@@ -1,6 +1,7 @@
 package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.VariableExpander;
@@ -25,12 +26,12 @@ public final class Matrix2DTest {
     @Test
     public void testMatrix() {
         Matrix2D matrix2D = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.ONE, IntegerConstant.ZERO, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ONE, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.ONE },
+                {Constant.ONE, Constant.ZERO, Constant.ZERO },
+                {Constant.ZERO, Constant.ONE, Constant.ZERO },
+                {Constant.ZERO, Constant.ZERO, Constant.ONE },
         });
         Assert.assertEquals("[[1, 0, 0], [0, 1, 0], [0, 0, 1]]", matrix2D.toString());
-        Assert.assertEquals(IntegerConstant.ONE, matrix2D.get(0, 0));
+        Assert.assertEquals(Constant.ONE, matrix2D.get(0, 0));
         Assert.assertEquals(matrix2D, Matrix2D.getI(3));
     }
 
@@ -39,15 +40,15 @@ public final class Matrix2DTest {
         Matrix2D I3 = Matrix2D.getI(3);
 
         Matrix2D matrix2D2 = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.ONE, IntegerConstant.ZERO, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ONE, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.ONE },
+                {Constant.ONE, Constant.ZERO, Constant.ZERO },
+                {Constant.ZERO, Constant.ONE, Constant.ZERO },
+                {Constant.ZERO, Constant.ZERO, Constant.ONE },
         });
 
         Matrix2D matrix2Dres = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.ONE.plus(IntegerConstant.ONE), IntegerConstant.ZERO, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ONE.plus(IntegerConstant.ONE), IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.ONE.plus(IntegerConstant.ONE) },
+                {Constant.ONE.plus(Constant.ONE), Constant.ZERO, Constant.ZERO },
+                {Constant.ZERO, Constant.ONE.plus(Constant.ONE), Constant.ZERO },
+                {Constant.ZERO, Constant.ZERO, Constant.ONE.plus(Constant.ONE) },
         });
 
         Matrix2D res = I3.plus(matrix2D2);
@@ -59,11 +60,11 @@ public final class Matrix2DTest {
         Matrix2D I3 = Matrix2D.getI(3);
 
         Matrix2D expectedResult = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.MINUS_ONE, IntegerConstant.ZERO, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.MINUS_ONE, IntegerConstant.ZERO },
-                {IntegerConstant.ZERO, IntegerConstant.ZERO, IntegerConstant.MINUS_ONE },
+                {Constant.MINUS_ONE, Constant.ZERO, Constant.ZERO },
+                {Constant.ZERO, Constant.MINUS_ONE, Constant.ZERO },
+                {Constant.ZERO, Constant.ZERO, Constant.MINUS_ONE },
         });
-        Matrix2D result = I3.times(IntegerConstant.MINUS_ONE).simplify();
+        Matrix2D result = I3.times(Constant.MINUS_ONE).simplify();
         Assert.assertEquals(expectedResult, result);
     }
 
@@ -176,18 +177,18 @@ public final class Matrix2DTest {
                 { "a21", "a22", "a23", },
                 { "a31", "a32", "a33", },
         }));
-        Expression result = IntegerConstant.ZERO.plus(
+        Expression result = Constant.ZERO.plus(
                 Variable.of("a11").times(Variable.of("a22")).times(Variable.of("a33"))
         ).plus(
                 Variable.of("a12").times(Variable.of("a23")).times(Variable.of("a31"))
         ).plus(
                 Variable.of("a13").times(Variable.of("a21")).times(Variable.of("a32"))
         ).plus(
-                Variable.of("a13").times(Variable.of("a22")).times(Variable.of("a31")).times(IntegerConstant.MINUS_ONE)
+                Variable.of("a13").times(Variable.of("a22")).times(Variable.of("a31")).times(Constant.MINUS_ONE)
         ).plus(
-                Variable.of("a12").times(Variable.of("a21")).times(Variable.of("a33")).times(IntegerConstant.MINUS_ONE)
+                Variable.of("a12").times(Variable.of("a21")).times(Variable.of("a33")).times(Constant.MINUS_ONE)
         ).plus(
-                Variable.of("a11").times(Variable.of("a23")).times(Variable.of("a32")).times(IntegerConstant.MINUS_ONE)
+                Variable.of("a11").times(Variable.of("a23")).times(Variable.of("a32")).times(Constant.MINUS_ONE)
         ).simplify();
         Assert.assertEquals(result, A.det().simplify());
     }

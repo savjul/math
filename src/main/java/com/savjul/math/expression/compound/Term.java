@@ -2,7 +2,7 @@ package com.savjul.math.expression.compound;
 
 import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.transformers.BasicComparison;
 
 import java.util.Collection;
@@ -65,7 +65,7 @@ public final class Term extends AbstractBaseExpression {
         } else if (expression.isConstant()) {
             return expression;
         } else {
-            return IntegerConstant.ONE;
+            return Constant.ONE;
         }
     }
 

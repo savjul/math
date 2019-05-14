@@ -1,7 +1,7 @@
 package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -20,7 +20,7 @@ public final class Matrix2D {
         for (int idx = 0; idx < n; idx++) {
             Expression[] row = new Expression[n];
             for (int jdx = 0; jdx < n; jdx++) {
-                row[jdx] = jdx == idx ? IntegerConstant.ONE : IntegerConstant.ZERO;
+                row[jdx] = jdx == idx ? Constant.ONE : Constant.ZERO;
             }
             matrix[idx] = row;
         }
@@ -69,7 +69,7 @@ public final class Matrix2D {
         for (int idx = 0; idx < matrix.length; idx++) {
             Expression[] row = new Expression[o.matrix[0].length];
             for (int jdx = 0; jdx < row.length; jdx++) {
-                Expression r = IntegerConstant.ZERO;
+                Expression r = Constant.ZERO;
                 for (int rdx = 0; rdx < this.matrix[0].length; rdx++) {
                     r = r.plus(this.matrix[idx][rdx].times(o.matrix[rdx][jdx]));
                 }
@@ -85,7 +85,7 @@ public final class Matrix2D {
         Expression[] v = vector.getValues();
         for (int idx = 0; idx < result.length; idx++) {
             Expression[] row = this.matrix[idx];
-            Expression r = IntegerConstant.ZERO;
+            Expression r = Constant.ZERO;
             for (int jdx = 0; jdx < row.length; jdx++) {
                 r = r.plus(row[jdx].times(v[jdx]));
             }
@@ -123,7 +123,7 @@ public final class Matrix2D {
 
     public Expression trace() {
         checkSquare();
-        Expression result = IntegerConstant.ZERO;
+        Expression result = Constant.ZERO;
         for (int idx = 0; idx < this.matrix.length; idx++) {
             result = result.plus(this.matrix[idx][idx]);
         }
@@ -136,7 +136,7 @@ public final class Matrix2D {
     }
 
     private Expression determinant() {
-        Expression result = IntegerConstant.ZERO;
+        Expression result = Constant.ZERO;
         int idx = 0;
         for (int jdx = 0; jdx < this.matrix.length; jdx++) {
             Expression a = this.matrix[idx][jdx];
@@ -147,16 +147,16 @@ public final class Matrix2D {
     }
 
     private Expression cofactor(int i, int j) {
-        Expression cofactor = IntegerConstant.ZERO;
+        Expression cofactor = Constant.ZERO;
 
         if (this.matrix.length == 2) {
             if (i == 0 && j == 0) cofactor = this.matrix[1][1];
-            if (i == 0 && j == 1) cofactor = this.matrix[1][0].times(IntegerConstant.MINUS_ONE);
-            if (i == 1 && j == 0) cofactor = this.matrix[0][1].times(IntegerConstant.MINUS_ONE);
+            if (i == 0 && j == 1) cofactor = this.matrix[1][0].times(Constant.MINUS_ONE);
+            if (i == 1 && j == 0) cofactor = this.matrix[0][1].times(Constant.MINUS_ONE);
             if (i == 1 && j == 1) cofactor = this.matrix[0][0];
         }
         else {
-            Expression sign = (i + j) % 2 == 0 ? IntegerConstant.ONE : IntegerConstant.MINUS_ONE;
+            Expression sign = (i + j) % 2 == 0 ? Constant.ONE : Constant.MINUS_ONE;
             return this.minor(i, j).times(sign);
         }
         return cofactor;
