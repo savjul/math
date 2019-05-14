@@ -1,6 +1,8 @@
 package com.savjul.math.expression;
 
+import com.savjul.math.expression.compound.Trigonometric;
 import com.savjul.math.expression.simple.Constant;
+import com.savjul.math.expression.simple.Transcendental;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
@@ -220,5 +222,34 @@ public final class ExpressionTest {
     public void testIntegerToNegativePower() {
         Expression e1 = Constant.of(5).pow(Constant.of(-2)).simplify();
         Assert.assertEquals(Constant.of(1).divideBy(Constant.of(25)), e1);
+    }
+
+    @Test
+    public void testSine() {
+        Expression sinx = Trigonometric.sin(Variable.of("x"));
+        Assert.assertFalse(sinx.isConstant());
+        Assert.assertEquals("sin(x)", sinx.toString());
+        Assert.assertEquals("csc(x)", sinx.invert().toString());
+    }
+
+    @Test
+    public void testTrigCalculation() {
+        Trigonometric csc45 = Trigonometric.sin(Transcendental.PI.divideBy(Constant.of(4.))).invert();
+        Assert.assertEquals("csc(π/4.0)", csc45.toString());
+        Assert.assertEquals(2./Math.sqrt(2.), csc45.withArgument(Constant.of(Math.PI/4.0)).doubleValue(), 0.0000000001);
+    }
+
+    @Test
+    public void testTrigSimplification() {
+        Expression expression = Transcendental.PI.divideBy(Trigonometric.sin(Variable.of("x")));
+        Assert.assertEquals("π/sin(x)", expression.toString());
+        Expression simplified = expression.simplify();
+        Assert.assertEquals("πcsc(x)", simplified.toString());
+    }
+
+    @Test(expected = Exception.class)
+    public void testCalculationOnVariableFails() {
+        Trigonometric sinx = Trigonometric.sin(Variable.of("x"));
+        sinx.doubleValue();
     }
 }

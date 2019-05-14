@@ -1,10 +1,10 @@
 package com.savjul.math.transformers;
 
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.compound.Exponent;
-import com.savjul.math.expression.compound.Polynomial;
-import com.savjul.math.expression.compound.Rational;
-import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.compound.*;
+import com.savjul.math.expression.simple.Constant;
+import com.savjul.math.expression.simple.Transcendental;
+import com.savjul.math.expression.simple.Variable;
 
 import java.util.List;
 import java.util.function.Function;
@@ -13,7 +13,7 @@ public final class ExpressionRenderer extends ExpressionVisitor<Void> {
     private static final Function<Expression, String> INSTANCE = ExpressionRenderer::render;
     private final StringBuilder sb;
 
-    public ExpressionRenderer(StringBuilder sb) {
+    private ExpressionRenderer(StringBuilder sb) {
         this.sb = sb;
     }
 
@@ -29,12 +29,13 @@ public final class ExpressionRenderer extends ExpressionVisitor<Void> {
 
     @Override
     public Void visit(Expression expression, Expression parent) {
-        if (!expression.isCompound()) {
-            sb.append(expression.toString());
-        }
-        else {
-            super.visit(expression, parent);
-        }
+        super.visit(expression, parent);
+        return null;
+    }
+
+    @Override
+    public Void visit(Term expression, Expression parent) {
+        super.visit(expression, parent);
         return null;
     }
 
@@ -62,10 +63,36 @@ public final class ExpressionRenderer extends ExpressionVisitor<Void> {
     }
 
     @Override
+    public Void visit(Transcendental expression, Expression parent) {
+        sb.append(expression.getName());
+        return null;
+    }
+
+    @Override
+    public Void visit(Trigonometric expression, Expression parent) {
+        sb.append(expression.getName()).append('(');
+        visit(expression.getArgument(), parent);
+        sb.append(')');
+        return null;
+    }
+
+    @Override
     public Void visit(Rational expression, Expression parent) {
         visit(expression.getNumerator(), expression);
         sb.append('/');
         visit(expression.getDenominator(), expression);
+        return null;
+    }
+
+    @Override
+    public Void visit(Constant<?> expression, Expression parent) {
+        sb.append(expression.getValue());
+        return null;
+    }
+
+    @Override
+    public Void visit(Variable expression, Expression parent) {
+        sb.append(expression.getName());
         return null;
     }
 }

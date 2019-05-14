@@ -1,10 +1,7 @@
 package com.savjul.math.transformers;
 
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.compound.Exponent;
-import com.savjul.math.expression.compound.Polynomial;
-import com.savjul.math.expression.compound.Rational;
-import com.savjul.math.expression.compound.Term;
+import com.savjul.math.expression.compound.*;
 import com.savjul.math.expression.simple.Constant;
 
 import java.util.*;
@@ -243,9 +240,17 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             Rational newRational = Rational.of(newNumerator, newDenominator);
             return visit(newRational, parent);
         }
+        else if (denominator instanceof Trigonometric) {
+            return visit(numerator.times(denominator.invert()), expression);
+        }
         else {
             return Rational.of(numerator, denominator);
         }
+    }
+
+    @Override
+    public Expression visit(Trigonometric expression, Expression parent) {
+        return expression.withArgument(visit(expression.getArgument(), expression));
     }
 
     private static Expression pow(Constant<Integer> base, Constant<Integer> power) {

@@ -4,7 +4,7 @@ import com.savjul.math.expression.AbstractBaseExpression;
 
 import java.util.Objects;
 
-public final class Constant<T extends Number> extends AbstractBaseExpression {
+public class Constant<T extends Number> extends AbstractBaseExpression {
     public static final Constant<Integer> MINUS_ONE = Constant.of(-1);
     public static final Constant<Integer> ZERO = Constant.of(0);
     public static final Constant<Integer> ONE = Constant.of(1);
