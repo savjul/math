@@ -16,13 +16,13 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     public static Function<Expression, Expression> instance() { return INSTANCE; }
 
     private static Expression expand(Expression expression) {
-        return SIMPLIFIER.visit(expression, null);
+        return SIMPLIFIER.visit(expression);
     }
 
     @Override
-    public Expression visit(Expression expression, Expression parent) {
+    public Expression visit(Expression expression) {
         if (expression.isCompound()) {
-            return super.visit(expression, parent);
+            return super.visit(expression);
         }
         else {
             return expression;
@@ -30,9 +30,9 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     @Override
-    public Expression visit(Term expression, Expression parent) {
+    public Expression visit(Term expression) {
         PriorityQueue<Expression> factors = new PriorityQueue<>(BasicComparison.termSimplify());
-        factors.addAll(expression.getFactors().stream().map(e->visit(e, expression))
+        factors.addAll(expression.getFactors().stream().map(e->visit(e))
                 .flatMap(e->e instanceof Term ? ((Term) e).getFactors().stream() : Stream.of(e))
                 .collect(Collectors.toList()));
         Deque<Expression> result = new ArrayDeque<>();
@@ -60,35 +60,35 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
                     Expression e2num = ((Rational) e2).getNumerator();
                     Expression e2den = ((Rational) e2).getDenominator();
                     Rational newRational = Rational.of(e1num.times(e2num), e1den.times(e2den));
-                    factors.add(visit(newRational, parent));
+                    factors.add(visit(newRational));
                 }
                 else if (e1 instanceof Rational) {
                     Expression newNumerator = ((Rational) e1).getNumerator().times(e2);
                     Expression newDenominator = ((Rational) e1).getDenominator();
                     Rational newRational = Rational.of(newNumerator, newDenominator);
-                    factors.add(visit(newRational, parent));
+                    factors.add(visit(newRational));
                 }
                 else if (e2 instanceof Rational) {
                     Expression newNumerator = ((Rational) e2).getNumerator().times(e1);
                     Expression newDenominator = ((Rational) e2).getDenominator();
                     Rational newRational = Rational.of(newNumerator, newDenominator);
-                    factors.add(visit(newRational, parent));
+                    factors.add(visit(newRational));
                 }
                 else if (Exponent.getBase(e1).equals(Exponent.getBase(e2))) {
                     Exponent newExponent = Exponent.of(Exponent.getBase(e1), Exponent.getPower(e1).plus(Exponent.getPower(e2)));
-                    factors.add(visit(newExponent, parent));
+                    factors.add(visit(newExponent));
                 }
                 else if (e1 instanceof Polynomial && e2 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(((Polynomial) e1).getTerms(), ((Polynomial) e2).getTerms());
-                    factors.add(visit(newPolynomial, parent));
+                    factors.add(visit(newPolynomial));
                 }
                 else if (e1 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(((Polynomial) e1).getTerms(), Collections.singletonList(e2));
-                    factors.add(visit(newPolynomial, parent));
+                    factors.add(visit(newPolynomial));
                 }
                 else if (e2 instanceof Polynomial) {
                     Polynomial newPolynomial = multiply(Collections.singletonList(e1), ((Polynomial) e2).getTerms());
-                    factors.add(visit(newPolynomial, parent));
+                    factors.add(visit(newPolynomial));
                 }
                 else {
                     result.add(e2);
@@ -133,9 +133,9 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     @Override
-    public Expression visit(Polynomial expression, Expression parent) {
+    public Expression visit(Polynomial expression) {
         PriorityQueue<Expression> terms = new PriorityQueue<>(BasicComparison.terms());
-        terms.addAll(expression.getTerms().stream().map(e->visit(e, expression))
+        terms.addAll(expression.getTerms().stream().map(e->visit(e))
                 .flatMap(e->e instanceof Polynomial ? ((Polynomial) e).getTerms().stream() : Stream.of(e))
                 .collect(Collectors.toList()));
         Deque<Expression> result = new ArrayDeque<>();
@@ -160,7 +160,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
                     Expression constant2 = Term.getConstantCoefficient(e2);
                     List<Expression> shared = Term.getNonConstants(e1);
                     Term e3 = Term.of(Stream.concat(shared.stream(), Stream.of(constant1.plus(constant2))).sorted(BasicComparison.factors()));
-                    terms.add(visit(e3, parent));
+                    terms.add(visit(e3));
                 }
                 else {
                     result.addLast(e2);
@@ -195,9 +195,9 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     @Override
-    public Expression visit(Exponent expression, Expression parent) {
-        Expression power = visit(expression.getPower(), expression);
-        Expression base = visit(expression.getBase(), expression);
+    public Expression visit(Exponent expression) {
+        Expression power = visit(expression.getPower());
+        Expression base = visit(expression.getBase());
         if (isOne(power)) {
             return base;
         }
@@ -219,9 +219,9 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     @Override
-    public Expression visit(Rational expression, Expression parent) {
-        Expression denominator = visit(expression.getDenominator(), expression);
-        Expression numerator = visit(expression.getNumerator(), expression);
+    public Expression visit(Rational expression) {
+        Expression denominator = visit(expression.getDenominator());
+        Expression numerator = visit(expression.getNumerator());
         if (isOne(denominator)) {
             return numerator;
         }
@@ -232,16 +232,16 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             Expression newNumerator = ((Rational)numerator).getNumerator().times(((Rational)denominator).getDenominator());
             Expression newDenominator = ((Rational)numerator).getDenominator().times(((Rational)denominator).getNumerator());
             Rational newRational = Rational.of(newNumerator, newDenominator);
-            return visit(newRational, parent);
+            return visit(newRational);
         }
         else if (denominator instanceof Rational) {
             Expression newNumerator = numerator.times(((Rational) denominator).getDenominator());
             Expression newDenominator = ((Rational) denominator).getNumerator();
             Rational newRational = Rational.of(newNumerator, newDenominator);
-            return visit(newRational, parent);
+            return visit(newRational);
         }
         else if (denominator instanceof Trigonometric) {
-            return visit(numerator.times(denominator.invert()), expression);
+            return visit(numerator.times(denominator.invert()));
         }
         else {
             return Rational.of(numerator, denominator);
@@ -249,8 +249,8 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
     }
 
     @Override
-    public Expression visit(Trigonometric expression, Expression parent) {
-        return expression.withArgument(visit(expression.getArgument(), expression));
+    public Expression visit(Trigonometric expression) {
+        return expression.withArgument(visit(expression.getArgument()));
     }
 
     private static Expression pow(Constant<Integer> base, Constant<Integer> power) {

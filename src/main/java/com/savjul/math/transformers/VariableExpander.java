@@ -1,10 +1,6 @@
 package com.savjul.math.transformers;
 
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.compound.Exponent;
-import com.savjul.math.expression.compound.Polynomial;
-import com.savjul.math.expression.compound.Rational;
-import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Variable;
 
@@ -12,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class VariableExpander extends ExpressionVisitor<Expression> {
+public final class VariableExpander extends ExpressionTransformer {
     private final Map<String, Expression> bindings;
     public static Builder get() {
         return new Builder();
@@ -50,48 +46,16 @@ public final class VariableExpander extends ExpressionVisitor<Expression> {
         }
     }
 
-
     private VariableExpander(Map<String, Expression> bindings) {
         this.bindings = bindings;
     }
 
     private static Expression expand(Map<String, Expression> bindings, Expression expression) {
-        return new VariableExpander(bindings).visit(expression, null);
+        return new VariableExpander(bindings).visit(expression);
     }
 
     @Override
-    public Expression visit(Expression expression, Expression parent) {
-        if (expression instanceof Variable) {
-            return bindings.getOrDefault(((Variable)expression).getName(), expression);
-        }
-        else {
-            return super.visit(expression, parent);
-        }
-    }
-
-    @Override
-    public Expression visit(Term expression, Expression parent) {
-        return Term.of(expression.getFactors().stream().map(e->visit(e, expression)));
-    }
-
-    @Override
-    public Expression visit(Polynomial expression, Expression parent) {
-        return Polynomial.of(expression.getTerms().stream().map(e->visit(e, expression)));
-    }
-
-    @Override
-    public Expression visit(Exponent expression, Expression parent) {
-        return Exponent.of(visit(expression.getBase(), expression), visit(expression.getPower(), expression));
-
-    }
-
-    @Override
-    public Expression visit(Rational expression, Expression parent) {
-        return Rational.of(visit(expression.getNumerator(), expression), visit(expression.getDenominator(), expression));
-    }
-
-    @Override
-    public Expression defaultValue(Expression expression, Expression parent) {
-        return expression;
+    public Expression visit(Variable expression) {
+        return bindings.getOrDefault((expression).getName(), expression);
     }
 }
