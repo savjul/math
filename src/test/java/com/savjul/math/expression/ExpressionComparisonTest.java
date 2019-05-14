@@ -1,7 +1,6 @@
 package com.savjul.math.expression;
 
 import com.savjul.math.expression.simple.Constant;
-import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.BasicComparison;
 import org.junit.Assert;
@@ -11,14 +10,14 @@ public final class ExpressionComparisonTest {
     @Test
     public void testVariableComparedToConstant() {
         Expression e1 = Variable.of("x");
-        Expression e2 = IntegerConstant.of(1);
+        Expression e2 = Constant.of(1);
         Assert.assertEquals(1, BasicComparison.factors().compare(e1, e2));
     }
 
     @Test
     public void testVariableTermComparedToConstant() {
-        Expression e1 = IntegerConstant.of(4).times(Variable.of("x"));
-        Expression e2 = IntegerConstant.of(1);
+        Expression e1 = Constant.of(4).times(Variable.of("x"));
+        Expression e2 = Constant.of(1);
         Assert.assertEquals(1, BasicComparison.factors().compare(e1, e2));
     }
 

@@ -4,12 +4,12 @@ import com.savjul.math.expression.AbstractBaseExpression;
 
 import java.util.Objects;
 
-public class Constant<T extends Number> extends AbstractBaseExpression {
-    public static final IntegerConstant MINUS_ONE = IntegerConstant.of(-1);
-    public static final IntegerConstant ZERO = IntegerConstant.of(0);
-    public static final IntegerConstant ONE = IntegerConstant.of(1);
-    public static final DoubleConstant DOUBLE_ZERO = DoubleConstant.of(0.0);
-    public static final DoubleConstant DOUBLE_ONE = DoubleConstant.of(1.0);
+public final class Constant<T extends Number> extends AbstractBaseExpression {
+    public static final Constant<Integer> MINUS_ONE = Constant.of(-1);
+    public static final Constant<Integer> ZERO = Constant.of(0);
+    public static final Constant<Integer> ONE = Constant.of(1);
+    public static final Constant<Double> DOUBLE_ZERO = Constant.of(0.0);
+    public static final Constant<Double> DOUBLE_ONE = Constant.of(1.0);
     private final T value;
 
     protected Constant(T value) {
@@ -21,7 +21,15 @@ public class Constant<T extends Number> extends AbstractBaseExpression {
         return new Constant<>(v);
     }
 
-    public T getValue() { return value; };
+    public T getValue() { return value; }
+
+    public boolean isSameType(Constant<?> other) {
+        return this.value.getClass() == other.value.getClass();
+    }
+
+    public boolean isSameType(Class<? extends Number> klass) {
+        return klass == value.getClass();
+    }
 
     @Override
     public boolean isConstant() {

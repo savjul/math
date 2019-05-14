@@ -6,8 +6,6 @@ import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
 import com.savjul.math.expression.simple.Constant;
-import com.savjul.math.expression.simple.DoubleConstant;
-import com.savjul.math.expression.simple.IntegerConstant;
 
 import java.util.*;
 import java.util.function.Function;
@@ -56,11 +54,8 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             }
             else {
                 Expression e2 = result.removeLast();
-                if (e1 instanceof IntegerConstant && e2 instanceof IntegerConstant) {
-                    factors.add(multiply((IntegerConstant) e1, (IntegerConstant) e2));
-                }
-                else if (e1 instanceof DoubleConstant && e2 instanceof DoubleConstant) {
-                    factors.add(multiply((DoubleConstant) e1, (DoubleConstant) e2));
+                if (e1 instanceof Constant && e2 instanceof Constant) {
+                    factors.add(multiply((Constant<?>) e1, (Constant<?>) e2));
                 }
                 else if (e1 instanceof Rational && e2 instanceof Rational) {
                     Expression e1num = ((Rational) e1).getNumerator();
@@ -69,7 +64,6 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
                     Expression e2den = ((Rational) e2).getDenominator();
                     Rational newRational = Rational.of(e1num.times(e2num), e1den.times(e2den));
                     factors.add(visit(newRational, parent));
-
                 }
                 else if (e1 instanceof Rational) {
                     Expression newNumerator = ((Rational) e1).getNumerator().times(e2);
@@ -108,12 +102,27 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
         return (result.isEmpty() ? Constant.ONE : result.size() == 1 ? result.removeLast() : Term.of(result.stream().sorted(BasicComparison.factors())));
     }
 
-    private static IntegerConstant multiply(IntegerConstant e1, IntegerConstant e2) {
-        return IntegerConstant.of(e1.getValue() * e2.getValue());
-    }
-
-    private static DoubleConstant multiply(DoubleConstant e1, DoubleConstant e2) {
-        return DoubleConstant.of(e1.getValue() * e2.getValue());
+    private static Expression multiply(Constant<?> e1, Constant<?> e2) {
+        if (e1.isSameType(e2) && e1.isSameType(Integer.class)) {
+            return Constant.of(e1.getValue().intValue() * e2.getValue().intValue());
+        }
+        else if (e1.isSameType(e2) && e1.isSameType(Long.class)) {
+            return Constant.of(e1.getValue().longValue() * e2.getValue().longValue());
+        }
+        else if (e1.isSameType(e2) && e1.isSameType(Double.class)) {
+            return Constant.of(e1.getValue().doubleValue() * e2.getValue().doubleValue());
+        }
+        else if (e1.isSameType(Double.class) || e2.isSameType(Double.class)) {
+            return Constant.of(e1.getValue().doubleValue() * e2.getValue().doubleValue());
+        }
+        else if (e1.isSameType(Long.class) || e2.isSameType(Long.class)) {
+            return Constant.of(e1.getValue().longValue() * e2.getValue().longValue());
+        }
+        else {
+            throw new IllegalArgumentException(String.format("Don't know how to multiply %s and %s",
+                    e1.getValue().getClass().getSimpleName(),
+                    e2.getValue().getClass().getSimpleName()));
+        }
     }
 
     private static Polynomial multiply(List<Expression> e1terms, List<Expression> e2terms) {
@@ -145,11 +154,8 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             }
             else {
                 Expression e2 = result.removeLast();
-                if (e1 instanceof IntegerConstant && e2 instanceof IntegerConstant) {
-                    terms.add(add((IntegerConstant) e1, (IntegerConstant) e2));
-                }
-                else if (e1 instanceof DoubleConstant && e2 instanceof DoubleConstant) {
-                    terms.add(add((DoubleConstant) e1, (DoubleConstant) e2));
+                if (e1 instanceof Constant<?> && e2 instanceof Constant<?>) {
+                    terms.add(add((Constant<?>) e1, (Constant<?>) e2));
                 }
                 else if (!Term.getNonConstants(e1).isEmpty() &&
                         Term.getNonConstants(e1).equals(Term.getNonConstants(e2))) {
@@ -168,12 +174,27 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
         return result.isEmpty() ? Constant.ZERO : result.size() == 1 ? result.removeLast() : Polynomial.of(result.stream().sorted(BasicComparison.terms()));
     }
 
-    private static Expression add(IntegerConstant e1, IntegerConstant e2) {
-        return IntegerConstant.of(e1.getValue() + e2.getValue());
-    }
-
-    private static Expression add(DoubleConstant e1, DoubleConstant e2) {
-        return DoubleConstant.of(e1.getValue() + e2.getValue());
+    private static Expression add(Constant<?> e1, Constant<?> e2) {
+        if (e1.isSameType(e2) && e1.isSameType(Integer.class)) {
+            return Constant.of(e1.getValue().intValue() + e2.getValue().intValue());
+        }
+        else if (e1.isSameType(e2) && e1.isSameType(Long.class)) {
+            return Constant.of(e1.getValue().longValue() + e2.getValue().longValue());
+        }
+        else if (e1.isSameType(e2) && e1.isSameType(Double.class)) {
+            return Constant.of(e1.getValue().doubleValue() + e2.getValue().doubleValue());
+        }
+        else if (e1.isSameType(Double.class) || e2.isSameType(Double.class)) {
+            return Constant.of(e1.getValue().doubleValue() + e2.getValue().doubleValue());
+        }
+        else if (e1.isSameType(Long.class) || e2.isSameType(Long.class)) {
+            return Constant.of(e1.getValue().longValue() + e2.getValue().longValue());
+        }
+        else {
+            throw new IllegalArgumentException(String.format("Don't know how to add %s and %s",
+                    e1.getValue().getClass().getSimpleName(),
+                    e2.getValue().getClass().getSimpleName()));
+        }
     }
 
     @Override
@@ -186,11 +207,14 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
         else if (isZero(base)) {
             return Constant.ZERO;
         }
-        else if (base instanceof DoubleConstant && power instanceof DoubleConstant) {
-            return DoubleConstant.of(Math.pow(((DoubleConstant)base).getValue(), ((DoubleConstant) power).getValue()));
+        else if (base instanceof Constant<?> && power instanceof Constant<?> && ((Constant) base).isSameType(Double.class)) {
+            return Constant.of(Math.pow(((Constant<?>)base).getValue().doubleValue(), ((Constant<?>) power).getValue().doubleValue()));
         }
-        else if (base instanceof IntegerConstant && power instanceof IntegerConstant) {
-            return pow((IntegerConstant) base, (IntegerConstant) power);
+        else if (base instanceof Constant && power instanceof Constant<?> && ((Constant) base).isSameType(Integer.class)) {
+            return pow((Constant<Integer>) base, (Constant<Integer>) power);
+        }
+        else if (base instanceof Constant<?> && power instanceof Constant<?> && ((Constant) base).isSameType(Long.class)) {
+            return lpow((Constant<Long>) base, (Constant<Long>) power);
         }
         else {
             return Exponent.of(base, power);
@@ -224,7 +248,7 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
         }
     }
 
-    private static Expression pow(IntegerConstant base, IntegerConstant power) {
+    private static Expression pow(Constant<Integer> base, Constant<Integer> power) {
         if (power.getValue() == 0) {
             return Constant.ONE;
         }
@@ -232,17 +256,43 @@ public final class ExpressionSimplifier extends ExpressionVisitor<Expression> {
             return base;
         }
         else if (power.getValue() > -1) {
-            return IntegerConstant.of(pow(base.getValue(), power.getValue()));
+            return Constant.of(pow(base.getValue(), power.getValue()));
         }
         else if (power.getValue() < 0) {
-            return IntegerConstant.of(pow(base.getValue(), -1 * power.getValue())).invert();
+            return Constant.of(pow(base.getValue(), -1 * power.getValue())).invert();
         }
         else {
             return base.pow(power);
         }
     }
 
-    private static long pow(long base, long power) {
+    private static Expression lpow(Constant<Long> base, Constant<Long> power) {
+        if (power.getValue() == 0) {
+            return Constant.ONE;
+        }
+        else if (power.getValue() == 1) {
+            return base;
+        }
+        else if (power.getValue() > -1) {
+            return Constant.of(lpow(base.getValue(), power.getValue()));
+        }
+        else if (power.getValue() < 0) {
+            return Constant.of(lpow(base.getValue(), -1 * power.getValue())).invert();
+        }
+        else {
+            return base.pow(power);
+        }
+    }
+
+    private static int pow(int base, int power) {
+        int res = 1;
+        for (long idx = 0; idx < power; idx++) {
+            res *= base;
+        }
+        return res;
+    }
+
+    private static long lpow(long base, long power) {
         long res = 1;
         for (long idx = 0; idx < power; idx++) {
             res *= base;

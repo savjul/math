@@ -2,7 +2,6 @@ package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.simple.Constant;
-import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
@@ -23,7 +22,7 @@ public final class VectorTest {
     @Test
     public void testMultiplicationByScalar() {
         Vector v1 = Vector.of(Variable.of("x"), Variable.of("y"), Variable.of("z"));
-        Vector res = v1.times(Variable.of("x")).times(IntegerConstant.of(4)).simplify();
+        Vector res = v1.times(Variable.of("x")).times(Constant.of(4)).simplify();
         Assert.assertEquals("[4(x^2), 4xy, 4xz]", res.toString());
     }
 
@@ -35,8 +34,8 @@ public final class VectorTest {
     }
 
     @Test
-    public void testDotProductWithIntegerConstants() {
-        Vector v1 = Vector.of(IntegerConstant.of(3), IntegerConstant.of(2), IntegerConstant.of(1));
+    public void testDotProductWithConstants() {
+        Vector v1 = Vector.of(Constant.of(3), Constant.of(2), Constant.of(1));
         Expression res = v1.dot(v1).simplify();
         Assert.assertEquals("14", res.toString());
     }

@@ -5,8 +5,6 @@ import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
-import com.savjul.math.expression.simple.DoubleConstant;
-import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Variable;
 
@@ -51,18 +49,10 @@ public class ExpressionVisitor<T>  {
         return defaultValue(expression, parent);
     }
 
-    public T visit(Constant expression, Expression parent) {
-        if (expression instanceof DoubleConstant) return visit((DoubleConstant) expression, parent);
-        if (expression instanceof IntegerConstant) return visit((IntegerConstant) expression, parent);
+    public T visit(Constant<?> expression, Expression parent) {
         return defaultValue(expression, parent);
     }
 
-    public T visit(DoubleConstant expression, Expression parent) {
-        return defaultValue(expression, parent);
-    }
-    public T visit(IntegerConstant expression, Expression parent) {
-        return defaultValue(expression, parent);
-    }
     public T visit(Variable expression, Expression parent) {
         return defaultValue(expression, parent);
     }

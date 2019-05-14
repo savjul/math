@@ -2,7 +2,6 @@ package com.savjul.math.linear;
 
 import com.savjul.math.expression.Expression;
 import com.savjul.math.expression.simple.Constant;
-import com.savjul.math.expression.simple.IntegerConstant;
 import com.savjul.math.expression.simple.Variable;
 import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
@@ -72,17 +71,17 @@ public final class Matrix2DTest {
     public void testMatrixMatrixMultiplication() {
         // textbook example
         Matrix2D A = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.of(1), IntegerConstant.of(2), IntegerConstant.of(4) },
-                {IntegerConstant.of(2), IntegerConstant.of(6), IntegerConstant.of(0) },
+                {Constant.of(1), Constant.of(2), Constant.of(4) },
+                {Constant.of(2), Constant.of(6), Constant.of(0) },
         });
         Matrix2D B = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.of(4), IntegerConstant.of(1), IntegerConstant.of(4), IntegerConstant.of(3) },
-                {IntegerConstant.of(0), IntegerConstant.of(-1), IntegerConstant.of(3), IntegerConstant.of(1) },
-                {IntegerConstant.of(2), IntegerConstant.of(7), IntegerConstant.of(5), IntegerConstant.of(2) },
+                {Constant.of(4), Constant.of(1), Constant.of(4), Constant.of(3) },
+                {Constant.of(0), Constant.of(-1), Constant.of(3), Constant.of(1) },
+                {Constant.of(2), Constant.of(7), Constant.of(5), Constant.of(2) },
         });
         Matrix2D AB = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.of(12), IntegerConstant.of(27), IntegerConstant.of(30), IntegerConstant.of(13) },
-                {IntegerConstant.of(8), IntegerConstant.of(-4), IntegerConstant.of(26), IntegerConstant.of(12) },
+                {Constant.of(12), Constant.of(27), Constant.of(30), Constant.of(13) },
+                {Constant.of(8), Constant.of(-4), Constant.of(26), Constant.of(12) },
         });
         Matrix2D result = A.times(B).simplify();
         Assert.assertEquals(AB, result);
@@ -91,14 +90,14 @@ public final class Matrix2DTest {
     @Test
     public void testMatrixTranspose() {
         Matrix2D A = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.of(1), IntegerConstant.of(2), IntegerConstant.of(4) },
-                {IntegerConstant.of(2), IntegerConstant.of(6), IntegerConstant.of(0) },
+                {Constant.of(1), Constant.of(2), Constant.of(4) },
+                {Constant.of(2), Constant.of(6), Constant.of(0) },
         });
 
         Matrix2D AT = Matrix2D.of(new Expression[][] {
-                {IntegerConstant.of(1), IntegerConstant.of(2) },
-                {IntegerConstant.of(2), IntegerConstant.of(6) },
-                {IntegerConstant.of(4), IntegerConstant.of(0) },
+                {Constant.of(1), Constant.of(2) },
+                {Constant.of(2), Constant.of(6) },
+                {Constant.of(4), Constant.of(0) },
         });
         Assert.assertEquals(AT, A.transpose());
     }
@@ -154,20 +153,20 @@ public final class Matrix2DTest {
     @Test
     public void testSimpleDeterminant() {
         Matrix2D A = Matrix2D.of(new Expression[][] {
-                { IntegerConstant.of(3), IntegerConstant.of(-4), },
-                { IntegerConstant.of(2), IntegerConstant.of(6), },
+                { Constant.of(3), Constant.of(-4), },
+                { Constant.of(2), Constant.of(6), },
         });
-        Assert.assertEquals(IntegerConstant.of(26), A.det().simplify());
+        Assert.assertEquals(Constant.of(26), A.det().simplify());
     }
 
     @Test
     public void testDeterminant() {
         Matrix2D A = Matrix2D.of(new Expression[][] {
-                { IntegerConstant.of(3), IntegerConstant.of(1), IntegerConstant.of(0)},
-                { IntegerConstant.of(-2), IntegerConstant.of(-4), IntegerConstant.of(3) },
-                { IntegerConstant.of(5), IntegerConstant.of(4), IntegerConstant.of(-2) },
+                { Constant.of(3), Constant.of(1), Constant.of(0)},
+                { Constant.of(-2), Constant.of(-4), Constant.of(3) },
+                { Constant.of(5), Constant.of(4), Constant.of(-2) },
         });
-        Assert.assertEquals(IntegerConstant.of(-1), A.det().simplify());
+        Assert.assertEquals(Constant.of(-1), A.det().simplify());
     }
 
     @Test

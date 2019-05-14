@@ -5,7 +5,7 @@ import com.savjul.math.expression.compound.Exponent;
 import com.savjul.math.expression.compound.Polynomial;
 import com.savjul.math.expression.compound.Rational;
 import com.savjul.math.expression.compound.Term;
-import com.savjul.math.expression.simple.IntegerConstant;
+import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Variable;
 
 import java.util.LinkedHashMap;
@@ -31,7 +31,17 @@ public final class VariableExpander extends ExpressionVisitor<Expression> {
         }
 
         public Builder add(String name, int value) {
-            this.mapping.put(name, IntegerConstant.of(value));
+            this.mapping.put(name, Constant.of(value));
+            return this;
+        }
+
+        public Builder add(String name, long value) {
+            this.mapping.put(name, Constant.of(value));
+            return this;
+        }
+
+        public Builder add(String name, double value) {
+            this.mapping.put(name, Constant.of(value));
             return this;
         }
 
