@@ -4,11 +4,16 @@ import com.savjul.math.expression.compound.Trigonometric;
 import com.savjul.math.expression.simple.Constant;
 import com.savjul.math.expression.simple.Transcendental;
 import com.savjul.math.expression.simple.Variable;
+import com.savjul.math.transformers.Calculator;
 import com.savjul.math.transformers.VariableExpander;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ExpressionTest {
     @Test
@@ -236,7 +241,7 @@ public final class ExpressionTest {
     public void testTrigCalculation() {
         Trigonometric csc45 = Trigonometric.sin(Transcendental.PI.divideBy(Constant.of(4.))).invert();
         Assert.assertEquals("csc(π/4.0)", csc45.toString());
-        Assert.assertEquals(2./Math.sqrt(2.), csc45.withArgument(Constant.of(Math.PI/4.0)).doubleValue(), 0.0000000001);
+        Assert.assertEquals(2./Math.sqrt(2.), csc45.doubleValue(), 0.0000000001);
     }
 
     @Test

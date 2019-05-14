@@ -2,80 +2,81 @@ package com.savjul.math.expression.compound;
 
 import com.savjul.math.expression.AbstractBaseExpression;
 import com.savjul.math.expression.Expression;
-import com.savjul.math.expression.simple.Constant;
+import com.savjul.math.transformers.Calculator;
 
 import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 
 public final class Trigonometric extends AbstractBaseExpression {
-    private enum Function {
+    private enum Type {
         sin(Math::sin) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return csc;
             }
         },
         cos(Math::cos) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return sec;
             }
         },
         tan(Math::tan) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return cot;
             }
         },
         cot(x -> 1.0 / Math.tan(x)) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return tan;
             }
         },
         sec(x -> 1.0 / Math.cos(x)) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return cos;
             }
         },
         csc(x -> 1.0 / Math.sin(x)) {
             @Override
-            Function inverse() {
+            Type inverse() {
                 return sin;
             }
         };
 
-        Function(DoubleUnaryOperator doubleOp) {
+        Type(DoubleUnaryOperator doubleOp) {
             this.doubleOp = doubleOp;
         }
 
-        abstract Function inverse();
+        abstract Type inverse();
         final DoubleUnaryOperator doubleOp;
     }
 
-    private final Function function;
+    private final Type type;
     private final Expression argument;
 
     public static Trigonometric sin(Expression argument) {
-        return new Trigonometric(Function.sin, argument);
+        return new Trigonometric(Type.sin, argument);
     }
 
     public static Trigonometric cos(Expression argument) {
-        return new Trigonometric(Function.cos, argument);
+        return new Trigonometric(Type.cos, argument);
     }
 
     public static Trigonometric tan(Expression argument) {
-        return new Trigonometric(Function.tan, argument);
+        return new Trigonometric(Type.tan, argument);
     }
 
-    private Trigonometric(Function function, Expression argument) {
-        this.function = function;
+    private Trigonometric(Type type, Expression argument) {
+        this.type = type;
         this.argument = argument;
     }
 
     public String getName() {
-        return function.name();
+        return type.name();
     }
 
     public Expression getArgument() {
@@ -94,24 +95,24 @@ public final class Trigonometric extends AbstractBaseExpression {
 
     @Override
     public Trigonometric invert() {
-        return new Trigonometric(function.inverse(), argument);
+        return new Trigonometric(type.inverse(), argument);
     }
 
     public double doubleValue() {
-        if (argument instanceof Constant) {
-            return function.doubleOp.applyAsDouble(((Constant) argument).getValue().doubleValue());
-        }
-        else {
-            throw new IllegalArgumentException("Can't calculate value of " + argument.toString());
-        }
+        return doubleValue(Calculator::doubleValue);
+    }
+
+    public double doubleValue(Function<Expression, Double> calc) {
+        // a bit circular but oh well
+        return type.doubleOp.applyAsDouble(calc.apply(argument));
     }
 
     public Trigonometric withArgument(Expression argument) {
-        return new Trigonometric(this.function, argument);
+        return new Trigonometric(this.type, argument);
     }
 
     public Trigonometric inverseWithArgument(Expression argument) {
-        return new Trigonometric(this.function.inverse(), argument);
+        return new Trigonometric(this.type.inverse(), argument);
     }
 
     @Override
@@ -119,12 +120,12 @@ public final class Trigonometric extends AbstractBaseExpression {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Trigonometric that = (Trigonometric) o;
-        return function == that.function &&
+        return type == that.type &&
                 Objects.equals(argument, that.argument);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(function, argument);
+        return Objects.hash(type, argument);
     }
 }
